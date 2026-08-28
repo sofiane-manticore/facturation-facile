@@ -25,6 +25,17 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Enveloppe de zoom fluide et réactive */
+.a4-zoom-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100%;
+  transform-origin: top center;
+  transition: transform 0.08s ease-out;
+}
+
 @media (max-width: 992px) {
   .a4-page-container {
     justify-content: center;

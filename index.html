@@ -158,16 +158,17 @@
     <!-- Zone de Travail (Éditeur A4) -->
     <section class="editor-viewport" id="editorViewport">
       
-      <!-- Outil de Zoom Document Flottant (Responsive, sans zoomer sur l'interface globale) -->
-      <div class="doc-zoom-toolbar no-print" id="docZoomToolbar" title="Zoom du document (Ctrl + Molette)">
+      <!-- Outil de Zoom Document Flottant (Avec Slider & Boutons) -->
+      <div class="doc-zoom-toolbar no-print" id="docZoomToolbar" title="Zoom du document (Slider / Molette / Tactile)">
         <button class="btn-zoom" id="btnZoomOut" aria-label="Zoom arrière" title="Zoom arrière (−10%)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </button>
-        <button class="btn-zoom-val" id="btnZoomReset" aria-label="Réinitialiser le zoom" title="Réinitialiser le zoom (100%)">
-          <span id="zoomValText">100%</span>
-        </button>
+        <input type="range" class="zoom-range-slider" id="docZoomSlider" min="50" max="200" step="5" value="100" aria-label="Niveau de zoom" title="Ajuster le zoom du document" />
         <button class="btn-zoom" id="btnZoomIn" aria-label="Zoom avant" title="Zoom avant (+10%)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <button class="btn-zoom-val" id="btnZoomReset" aria-label="Réinitialiser le zoom" title="Réinitialiser le zoom (100%)">
+          <span id="zoomValText">100%</span>
         </button>
       </div>
 

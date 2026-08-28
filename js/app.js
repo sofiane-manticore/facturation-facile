@@ -503,21 +503,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /**
-   * Retourne le code HTML de la pastille de statut
+   * Retourne le code HTML de la pastille de statut (Format Brutaliste Géométrique)
    */
   function getStatusBadgeHtml(status) {
     switch (status) {
       case 'envoye':
-        return '<span class="status-pill status-pill-envoye">🔵 Envoyé</span>';
+        return '<span class="status-pill status-pill-envoye">[▲] ENVOYÉ</span>';
       case 'accepte':
-        return '<span class="status-pill status-pill-accepte">🟢 Validé</span>';
+        return '<span class="status-pill status-pill-accepte">[■] VALIDÉ</span>';
       case 'paye':
-        return '<span class="status-pill status-pill-paye">🟣 Payé</span>';
+        return '<span class="status-pill status-pill-paye">[✦] PAYÉ</span>';
       case 'annule':
-        return '<span class="status-pill status-pill-annule">🔴 Annulé</span>';
+        return '<span class="status-pill status-pill-annule">[✕] ANNULÉ</span>';
       case 'brouillon':
       default:
-        return '<span class="status-pill status-pill-brouillon">🟡 Brouillon</span>';
+        return '<span class="status-pill status-pill-brouillon">[●] BROUILLON</span>';
     }
   }
 
@@ -531,8 +531,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     projects.sort((a, b) => a.name.localeCompare(b.name));
 
-    filterProjectSelect.innerHTML = '<option value="all">Projet : Tous</option>' + projects.map(p => {
-      return `<option value="${escapeHtml(p.name)}">📁 ${escapeHtml(p.name)} (${p.count})</option>`;
+    filterProjectSelect.innerHTML = '<option value="all">PROJET : TOUS</option>' + projects.map(p => {
+      return `<option value="${escapeHtml(p.name)}">[DIR] ${escapeHtml(p.name)} (${p.count})</option>`;
     }).join('');
 
     if (currentVal && (currentVal === 'all' || projects.some(p => p.name === currentVal))) {
@@ -675,29 +675,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const totals = Calculations.calculateDocumentTotals(doc);
       const badgeClass = `badge-${doc.type || 'devis'}`;
       const dateDisplay = Nomenclature.formatDateToFR(doc.dateEmission);
-      const statusBadge = doc.archived ? '<span class="status-pill status-pill-archived">📦 Archivé</span>' : getStatusBadgeHtml(doc.status);
+      const statusBadge = doc.archived ? '<span class="status-pill status-pill-archived">[📦] ARCHIVÉ</span>' : getStatusBadgeHtml(doc.status);
 
       // Libellé très court pour le type de document
-      let typeShortLabel = 'Devis';
-      if (doc.type === 'facture_acompte') typeShortLabel = 'Acompte';
-      else if (doc.type === 'facture_solde') typeShortLabel = 'Solde';
-      else if (doc.type === 'facture') typeShortLabel = 'Facture';
-      else if (doc.type === 'template') typeShortLabel = 'Modèle';
+      let typeShortLabel = 'DEVIS';
+      if (doc.type === 'facture_acompte') typeShortLabel = 'ACOMPTE';
+      else if (doc.type === 'facture_solde') typeShortLabel = 'SOLDE';
+      else if (doc.type === 'facture') typeShortLabel = 'FACTURE';
+      else if (doc.type === 'template') typeShortLabel = 'MODÈLE';
 
       // Calcul des liaisons pour affichage dans la carte
       let linkPill = '';
       if (doc.type.startsWith('devis')) {
         const linkedInvoices = Store.getLinkedInvoices(doc.id);
         if (linkedInvoices.length > 0) {
-          linkPill = `<span class="doc-card-links-pill">🔗 ${linkedInvoices.length} fact.</span>`;
+          linkPill = `<span class="doc-card-links-pill">// ${linkedInvoices.length} FACT.</span>`;
         }
       } else if (doc.linkedDevisNumero) {
-        linkPill = `<span class="doc-card-links-pill">🔗 ${escapeHtml(doc.linkedDevisNumero)}</span>`;
+        linkPill = `<span class="doc-card-links-pill">// ${escapeHtml(doc.linkedDevisNumero)}</span>`;
       }
 
       // Couleur personnalisée du badge projet
-      const pColor = doc.prefixColor || '#38bdf8';
-      const prefixBadgeStyle = `background-color: ${pColor}26; color: ${pColor}; border: 1px solid ${pColor}66;`;
+      const pColor = doc.prefixColor || '#18181b';
+      const prefixBadgeStyle = `border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-main);`;
 
       card.innerHTML = `
         <div class="doc-card-row-1">
@@ -766,12 +766,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ? linkedInvoices.map(inv => {
             const invTotal = Calculations.calculateDocumentTotals(inv);
             const typeClass = inv.type === 'facture_acompte' ? 'pill-acompte' : inv.type === 'facture_solde' ? 'pill-solde' : 'pill-facture';
-            const statusLabel = inv.status === 'paye' ? '🟢 Payé' : inv.status === 'envoye' ? '🔵 Envoyé' : '🟡 Brouillon';
+            const statusLabel = inv.status === 'paye' ? '[✦] PAYÉ' : inv.status === 'envoye' ? '[▲] ENVOYÉ' : '[●] BROUILLON';
             return `
               <button class="linked-doc-pill ${typeClass} btn-open-linked-doc" data-id="${inv.id}" title="Ouvrir cette facture">
                 <span>${inv.numero || 'Facture'}</span>
-                <span style="color:#94a3b8;">(${invTotal.formatted.totalTTC})</span>
-                <span style="font-size:10px;">${statusLabel}</span>
+                <span style="color:#71717a;">(${invTotal.formatted.totalTTC})</span>
+                <span style="font-size:9.5px;">${statusLabel}</span>
               </button>
             `;
           }).join('')
@@ -781,31 +781,31 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="doc-link-banner banner-devis no-print">
           <div class="clean-flow-header">
             <div class="clean-flow-title-wrap">
-              <span class="clean-flow-icon">⚡</span>
-              <span class="clean-flow-title">Facturer ce devis</span>
+              <span class="clean-flow-icon">//</span>
+              <span class="clean-flow-title">FACTURER CE DEVIS</span>
             </div>
-            <span class="clean-flow-hint">Génération en 1 clic</span>
+            <span class="clean-flow-hint">GÉNÉRATION EN 1 CLIC</span>
           </div>
 
           <div class="clean-flow-grid">
             <button class="clean-flow-btn" id="btnLinkedNewAcompte" title="Créer une facture d'acompte (40%) liée à ce devis">
-              <span class="btn-flow-icon">⏳</span>
-              <span class="btn-flow-text">Acompte <span class="btn-flow-sub">(40%)</span></span>
+              <span class="btn-flow-icon">[40%]</span>
+              <span class="btn-flow-text">ACOMPTE <span class="btn-flow-sub">(40%)</span></span>
             </button>
 
             <button class="clean-flow-btn" id="btnLinkedNewSolde" title="Créer la facture finale de solde (acompte déduit)">
-              <span class="btn-flow-icon">⚖️</span>
-              <span class="btn-flow-text">Solde</span>
+              <span class="btn-flow-icon">[BAL]</span>
+              <span class="btn-flow-text">SOLDE</span>
             </button>
 
             <button class="clean-flow-btn" id="btnLinkedNewStandard" title="Créer une facture intégrale standard (100%)">
-              <span class="btn-flow-icon">💶</span>
-              <span class="btn-flow-text">Facture <span class="btn-flow-sub">(100%)</span></span>
+              <span class="btn-flow-icon">[100%]</span>
+              <span class="btn-flow-text">FACTURE <span class="btn-flow-sub">(100%)</span></span>
             </button>
 
             <button class="clean-flow-btn clean-flow-btn-assoc" id="btnLinkedLinkExisting" title="Associer une facture déjà existante à ce devis">
-              <span class="btn-flow-icon">🔗</span>
-              <span class="btn-flow-text">Associer...</span>
+              <span class="btn-flow-icon">[+]</span>
+              <span class="btn-flow-text">ASSOCIER...</span>
             </button>
           </div>
 
@@ -863,25 +863,25 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="doc-link-banner banner-facture no-print">
           <div class="clean-flow-header">
             <div class="clean-flow-title-wrap">
-              <span class="clean-flow-icon">🔗</span>
-              <span class="clean-flow-title">Devis d'origine</span>
+              <span class="clean-flow-icon">//</span>
+              <span class="clean-flow-title">DEVIS D'ORIGINE</span>
             </div>
           </div>
 
           <div class="clean-facture-origin-wrap">
             ${linkedDevis ? `
               <button class="linked-doc-pill pill-devis" id="btnOpenLinkedDevis" title="Ouvrir le devis d'origine">
-                <span>📄 Devis ${escapeHtml(linkedDevis.numero)}</span>
-                <span style="color:#94a3b8;">(${escapeHtml(linkedDevis.client?.nom || '')})</span>
+                <span>[DOC] DEVIS ${escapeHtml(linkedDevis.numero)}</span>
+                <span style="color:#71717a;">(${escapeHtml(linkedDevis.client?.nom || '')})</span>
                 <span style="font-size:10px;">↗</span>
               </button>
               <div style="display: flex; gap: 4px;">
-                <button class="btn btn-sm btn-dark" id="btnChangeLinkedDevis" title="Changer de devis">Remplacer</button>
-                <button class="btn btn-sm btn-danger-outline" id="btnUnlinkDevis" title="Dissocier du devis">✕</button>
+                <button class="btn btn-sm btn-dark" id="btnChangeLinkedDevis" title="Changer de devis">REMPLACER</button>
+                <button class="btn btn-sm btn-danger-outline" id="btnUnlinkDevis" title="Dissocier du devis">[✕]</button>
               </div>
             ` : `
               <span class="facture-solo-text">Facture autonome (non rattachée)</span>
-              <button class="btn btn-sm btn-dark" id="btnChangeLinkedDevis">+ Lier à un devis</button>
+              <button class="btn btn-sm btn-dark" id="btnChangeLinkedDevis">[+] LIER À UN DEVIS</button>
             `}
           </div>
         </div>
@@ -2224,10 +2224,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('manticore_theme', theme);
     if (themeIcon) {
-      themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+      themeIcon.textContent = theme === 'dark' ? '◐' : '◑';
     }
     if (btnThemeToggle) {
-      btnThemeToggle.title = theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre (Dark Mode)';
+      btnThemeToggle.title = theme === 'dark' ? 'MODE CLAIR' : 'MODE SOMBRE';
       btnThemeToggle.setAttribute('aria-label', btnThemeToggle.title);
     }
   }
@@ -2236,7 +2236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const current = document.documentElement.getAttribute('data-theme') || getActiveTheme();
     const next = current === 'dark' ? 'light' : 'dark';
     applyTheme(next);
-    showToast(next === 'dark' ? 'Mode Sombre activé 🌙' : 'Mode Clair activé ☀️', 'info');
+    showToast(next === 'dark' ? 'MODE SOMBRE ACTIVÉ' : 'MODE CLAIR ACTIVÉ', 'info');
   }
 
   function initThemeManager() {

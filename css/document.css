@@ -193,8 +193,8 @@
   color: var(--doc-text-color);
   font-family: var(--doc-font-family);
   font-size: 10.5px;
-  line-height: 1.35;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(9, 9, 11, 0.2);
+  box-shadow: 6px 6px 0px rgba(9, 9, 11, 0.08);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

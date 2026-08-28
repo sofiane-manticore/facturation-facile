@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Facturation Facile - Devis & Factures</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  
+  <!-- Polices & Stylesheets -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/document.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+  <!-- Bouton Menu Mobile (Flottant pour petits écrans) -->
+  <button class="btn btn-dark btn-toggle-mobile" id="btnToggleMobileSidebar" aria-label="Ouvrir le menu">
+    <span>☰</span>
+  </button>
+
+  <!-- Voile d'arrière-plan pour fermeture mobile de la sidebar -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Zone Principale (100% de la hauteur de l'écran) -->
+  <main class="app-main">
+    
+    <!-- Barre Latérale Gauche -->
+    <aside class="app-sidebar" id="appSidebar">
+      
+      <div class="sidebar-top">
+        <!-- Bouton Fermer sur Mobile/Tablette (Tout en haut de la barre latérale) -->
+        <div class="sidebar-mobile-header">
+          <button class="btn-close-sidebar" id="btnCloseMobileSidebar" aria-label="Fermer le menu">
+            <span>✕</span> <span>Fermer le menu</span>
+          </button>
+        </div>
+
+        <!-- Logo & Titre de l'application avec bouton Aide discret -->
+        <div class="sidebar-brand-header">
+          <div class="brand-logo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #38bdf8;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>FACTURATION FACILE</span>
+          </div>
+          
+          <button class="btn btn-help-subtle" id="btnOpenOnboarding" title="Guide d'utilisation & Aide">
+            <span>💡</span> <span class="help-btn-text">Aide</span>
+          </button>
+        </div>
+
+        <!-- Bouton Nouveau Document -->
+        <div class="new-doc-dropdown">
+          <button class="btn btn-primary btn-create-main" id="btnCreateMain">
+            <span>+ Nouveau Document</span>
+            <span style="font-size: 10px;">▼</span>
+          </button>
+          
+          <div class="create-menu" id="createMenu">
+            <button class="menu-item" id="menuCreateDevis">
+              <span style="color: #38bdf8;">📄</span> Créer un nouveau devis vierge
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item" id="menuOpenTemplates">
+              <span style="color: #f472b6;">⭐</span> Choisir depuis un modèle
+            </button>
+          </div>
+        </div>
+
+        <!-- Champ de recherche -->
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Rechercher par projet, n°, client..." />
+        </div>
+
+        <!-- Filtres par onglets -->
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-filter="all">Tous</button>
+          <button class="tab-btn" data-filter="devis">Devis</button>
+          <button class="tab-btn" data-filter="facture">Factures</button>
+        </div>
+
+        <!-- Filtres Avancés : Statut, Projet, Client, Date & Archives -->
+        <div class="sidebar-filters-bar">
+          <div class="filter-row">
+            <select class="sidebar-filter-select" id="filterStatusSelect" title="Filtrer par statut">
+              <option value="all">Statut : Tous</option>
+              <option value="brouillon">🟡 Brouillon</option>
+              <option value="envoye">🔵 Envoyé</option>
+              <option value="accepte">🟢 Validé</option>
+              <option value="paye">🟣 Payé</option>
+              <option value="annule">🔴 Annulé</option>
+            </select>
+
+            <select class="sidebar-filter-select" id="filterProjectSelect" title="Filtrer par projet">
+              <option value="all">Projet : Tous</option>
+              <!-- Rempli dynamiquement -->
+            </select>
+          </div>
+
+          <div class="filter-row" style="margin-top: 4px;">
+            <select class="sidebar-filter-select" id="filterClientSelect" style="flex: 1;" title="Filtrer par client">
+              <option value="all">Client : Tous</option>
+              <!-- Rempli dynamiquement -->
+            </select>
+
+            <select class="sidebar-filter-select" id="filterDateSelect" style="width: 110px;" title="Filtrer par période / tri">
+              <option value="recent">Tri : Récents</option>
+              <option value="oldest">Tri : Anciens</option>
+              <option value="this_month">Ce mois-ci</option>
+              <option value="this_year">Cette année</option>
+            </select>
+          </div>
+
+          <div class="filter-row" style="margin-top: 4px; justify-content: space-between;">
+            <button class="btn btn-dark btn-sm toggle-archive-btn" id="btnToggleArchived" title="Afficher ou masquer les documents archivés">
+              <span id="toggleArchivedText">📦 Archivés (0)</span>
+            </button>
+
+            <button class="btn btn-dark btn-sm" id="btnResetFilters" title="Réinitialiser tous les filtres" style="padding: 2px 8px; font-size: 11px;">
+              ↺ Reset
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Liste des documents -->
+      <div class="docs-list" id="docsList">
+        <!-- Rempli dynamiquement via JS -->
+      </div>
+
+      <!-- Pied de la barre latérale -->
+      <div class="sidebar-footer">
+        <button class="btn btn-dark btn-sm" id="btnOpenProfile" style="flex: 1;">
+          👤 Mon Profil
+        </button>
+        <button class="btn btn-dark btn-sm" id="btnOpenClients" style="flex: 1;">
+          🏢 Clients
+        </button>
+        <button class="btn btn-dark btn-sm" id="btnOpenBackup" title="Sauvegarde / Export JSON" style="padding: 5px 8px;">
+          💾
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- Poignée pour redimensionner la barre latérale -->
+    <div class="sidebar-resizer" id="sidebarResizer" title="Glisser horizontalement pour redimensionner la barre latérale"></div>
+
+    <!-- Zone de Travail (Éditeur A4) -->
+    <section class="editor-viewport">
+      
+      <!-- Conteneur de la feuille A4 (Accès direct sans barre parasite au-dessus) -->
+      <div class="a4-page-container" id="a4PageContainer">
+        <!-- Rendu dynamique via JS -->
+      </div>
+
+      <!-- Encart Flottant Rétractable des Paramètres & Exports du Document (Bas Droite) -->
+      <div class="doc-floating-panel no-print" id="docFloatingPanel">
+        <!-- Barre d'ancrage flottante : Déclencheur + Boutons d'export -->
+        <div class="floating-dock-bar">
+          <!-- Bouton Déclencheur des Options / Paramètres -->
+          <button class="floating-panel-toggle" id="btnToggleFloatingPanel" title="Afficher / Réduire les paramètres du document">
+            <div class="floating-toggle-left">
+              <span class="floating-toggle-icon">⚙️</span>
+              <span class="floating-toggle-title">Options</span>
+              <span class="floating-toggle-badge" id="floatingToggleBadge">🟡 Brouillon</span>
+            </div>
+            <span class="floating-toggle-arrow" id="floatingToggleArrow">▲</span>
+          </button>
+
+          <!-- Bouton Imprimer -->
+          <button class="btn btn-print-prominent" id="btnPrintA4" title="Imprimer ou enregistrer au format PDF via votre navigateur">
+            <span>🖨️</span> <span>Imprimer</span>
+          </button>
+
+          <!-- Bouton Télécharger PDF -->
+          <button class="btn btn-pdf-prominent" id="btnExportPdf" title="Télécharger le fichier PDF vectoriel 1 page (texte sélectionnable)">
+            <span>📥</span> <span>Télécharger PDF</span>
+          </button>
+        </div>
+
+        <!-- Corps Déroulant du Panneau Flottant (s'ouvre au-dessus) -->
+        <div class="floating-panel-body" id="floatingPanelBody">
+          <div class="floating-panel-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 15px;">⚙️</span>
+              <span class="floating-header-title">Paramètres du document</span>
+            </div>
+            <button class="floating-close-btn" id="btnCloseFloatingPanel" title="Réduire ce panneau">✕</button>
+          </div>
+
+          <!-- 1. Propriétés principales (Statut, Devise, Projet) -->
+          <div class="floating-section">
+            <div class="floating-section-label">Informations Générales</div>
+            <div class="floating-grid-row">
+              <div class="floating-field">
+                <label class="floating-label">Statut</label>
+                <select class="status-select" id="statusSelect">
+                  <option value="brouillon">🟡 Brouillon</option>
+                  <option value="envoye">🔵 Envoyé</option>
+                  <option value="accepte">🟢 Validé / Signé</option>
+                  <option value="paye">🟣 Payé</option>
+                  <option value="annule">🔴 Annulé</option>
+                </select>
+              </div>
+
+              <div class="floating-field">
+                <label class="floating-label">Devise</label>
+                <select class="status-select" id="docCurrencySelect" title="Modifier la devise pour ce document">
+                  <option value="€">EUR (€)</option>
+                  <option value="$">USD ($)</option>
+                  <option value="CA$">CAD (CA$)</option>
+                  <option value="£">GBP (£)</option>
+                  <option value="CHF">CHF (CHF)</option>
+                  <option value="¥">JPY / CNY (¥)</option>
+                  <option value="MAD">MAD (DH)</option>
+                  <option value="DZD">DZD (DA)</option>
+                  <option value="TND">TND (DT)</option>
+                  <option value="FCFA">FCFA</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="floating-field" style="margin-top: 8px;">
+              <label class="floating-label">Projet associé</label>
+              <div class="prefix-input-wrap">
+                <button class="project-name-btn" id="btnOpenRenameModal" title="Modifier le projet (Renommer ou rattacher à un projet existant)">
+                  <span id="docPrefixText">PROJET</span>
+                  <span class="rename-icon">✎</span>
+                </button>
+                <input type="color" class="project-color-picker" id="docProjectColorInput" title="Modifier la couleur du projet" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Sections affichées sur la feuille A4 -->
+          <div class="floating-section">
+            <div class="floating-section-label">Sections Affichées</div>
+            <div class="floating-toggles-grid">
+              <button class="toggle-btn" id="toggleBankBtn" title="Afficher/Masquer le tableau RIB bancaire">
+                🏦 RIB Bancaire
+              </button>
+              <button class="toggle-btn" id="toggleAcompteBtn" title="Afficher/Masquer la ventilation Acompte & Solde">
+                📊 Acompte / Solde %
+              </button>
+              <button class="toggle-btn" id="toggleSigBtn" title="Afficher/Masquer le bloc de signature client">
+                ✍️ Signature
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Liaison Devis <-> Factures (Flux étape suivante) -->
+          <div class="floating-section" id="floatingLinkSection">
+            <div class="floating-section-label">Liaison & Facturation</div>
+            <div id="docLinkBannerContainer"></div>
+          </div>
+
+          <!-- 4. Actions & Gestion du document -->
+          <div class="floating-section floating-section-actions">
+            <div class="floating-section-label">Gestion Document</div>
+            <div class="floating-actions-list">
+              <button class="floating-action-btn" id="btnArchiveDoc">
+                <span id="archiveDocIcon">📦</span> <span id="archiveDocText">Archiver ce document</span>
+              </button>
+              <button class="floating-action-btn" id="btnSaveAsTemplate">
+                <span>⭐</span> <span>Enregistrer comme modèle</span>
+              </button>
+              <button class="floating-action-btn" id="btnDuplicateDoc">
+                <span>📋</span> <span>Dupliquer ce document</span>
+              </button>
+              <button class="floating-action-btn floating-action-danger" id="btnDeleteDoc">
+                <span>🗑️</span> <span>Supprimer ce document</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODALES
+       ========================================================================== -->
+
+  <!-- Modale : Création Nouveau Document avec Projet Requis & Couleur -->
+  <div class="modal-backdrop" id="modalNewDocPrompt">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalNewDocTitle">📁 Nouveau Document</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="newDocTypeHidden" value="devis" />
+        <input type="hidden" id="newDocTemplateHidden" value="" />
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Nom du Projet <span style="color: #ef4444;">* (Requis)</span> :</label>
+          <input type="text" class="form-input" id="newDocProjectInput" placeholder="Tapez un nouveau nom unique..." required autocomplete="off" />
+          <div id="newDocValidationMsg" style="font-size: 11px; margin-top: 4px; min-height: 16px;"></div>
+          
+          <!-- Projets existants pour clic rapide -->
+          <div id="existingProjectsChips" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;"></div>
+        </div>
+
+        <div class="form-group" style="margin-top: 8px;">
+          <label class="form-label" style="font-weight: 600;">Couleur d'identification du Projet :</label>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <input type="color" id="newDocColorPicker" value="#38bdf8" class="project-color-picker large" />
+            <div id="newDocColorPresets" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Annuler</button>
+        <button class="btn btn-primary" id="btnConfirmCreateDoc">Créer le document →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Modifier le Projet (Renommage Unique ou Rattachement à un Projet Existant) -->
+  <div class="modal-backdrop" id="modalRenameProject">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📁 Modifier le Projet</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Option 1 : Renommer le projet existant (nom unique obligatoire) -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">1. Renommer le projet <span id="renameProjectOldName" style="color: #38bdf8;"></span> :</label>
+          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">
+            Saisissez un <strong>nouveau nom unique</strong> (sera répercuté sur tous ses devis et factures) :
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" class="form-input" id="renameProjectNewNameInput" placeholder="Nouveau nom unique..." required autocomplete="off" style="flex: 1;" />
+            <button class="btn btn-primary" id="btnConfirmRenameProject">Renommer</button>
+          </div>
+          <div id="renameValidationMsg" style="font-size: 11px; margin-top: 5px; min-height: 16px;"></div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin: 4px 0;">
+          <div style="flex: 1; height: 1px; background: #334155;"></div>
+          <span style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase;">OU</span>
+          <div style="flex: 1; height: 1px; background: #334155;"></div>
+        </div>
+
+        <!-- Option 2 : Rattacher à un projet existant -->
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">2. Rattacher ce document à un projet existant :</label>
+          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">
+            Cliquez sur un projet pour y intégrer ce document avec sa couleur :
+          </div>
+          <div id="reassignProjectsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 190px; overflow-y: auto;">
+            <!-- Rempli dynamiquement -->
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Bibliothèque de Modèles -->
+  <div class="modal-backdrop" id="modalTemplates">
+    <div class="modal-box" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⭐ Bibliothèque de Modèles</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: #94a3b8;">Sélectionnez un modèle pour créer instantanément un nouveau document avec la date du jour et un nouveau numéro séquentiel.</p>
+        <div class="template-grid" id="templatesList">
+          <!-- Rempli par JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Profil Émetteur -->
+  <div class="modal-backdrop" id="modalProfile">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">👤 Profil Émetteur par Défaut</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: #94a3b8;">Ces informations seront utilisées automatiquement lors de la création de nouveaux devis et factures.</p>
+        
+        <div class="form-group">
+          <label class="form-label">Nom / Prénom ou Société</label>
+          <input type="text" class="form-input" id="profNom" />
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Adresse (Ligne 1)</label>
+            <input type="text" class="form-input" id="profLigne1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Code Postal & Ville (Ligne 2)</label>
+            <input type="text" class="form-input" id="profLigne2" />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Email professionnel</label>
+            <input type="email" class="form-input" id="profEmail" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statut (ex: Freelance)</label>
+            <input type="text" class="form-input" id="profStatut" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Numéro SIRET</label>
+          <input type="text" class="form-input" id="profSiret" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mention de pied de page par défaut</label>
+          <input type="text" class="form-input" id="profFooter" />
+        </div>
+
+        <div style="border-top: 1px solid #334155; padding-top: 12px; margin-top: 4px;">
+          <h4 style="font-size: 13px; color: #38bdf8; margin-bottom: 10px;">Coordonnées Bancaires (RIB)</h4>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Titulaire du compte</label>
+              <input type="text" class="form-input" id="profBankTitulaire" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Banque</label>
+              <input type="text" class="form-input" id="profBankNom" />
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 8px;">
+            <div class="form-group">
+              <label class="form-label">IBAN</label>
+              <input type="text" class="form-input" id="profBankIban" style="font-weight: 500; letter-spacing: 0.3px;" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">BIC / SWIFT</label>
+              <input type="text" class="form-input" id="profBankBic" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Annuler</button>
+        <button class="btn btn-primary" id="btnSaveProfile">Enregistrer les modifications</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Carnet de Clients -->
+  <div class="modal-backdrop" id="modalClients">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">🏢 Carnet de Clients</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; color: #94a3b8;">Sélectionnez un client pour l'appliquer au document actif :</span>
+          <button class="btn btn-primary btn-sm" id="btnAddNewClient">+ Nouveau Client</button>
+        </div>
+        <div id="clientsList" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Sauvegarde & Restauration JSON -->
+  <div class="modal-backdrop" id="modalBackup">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">💾 Sauvegarde & Restauration des Données</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: #94a3b8;">Vos données sont enregistrées automatiquement en continu dans le stockage de votre navigateur. Vous pouvez également télécharger un fichier de sauvegarde JSON ou transférer vos données sur un autre ordinateur.</p>
+        
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-primary" id="btnDownloadBackup" style="flex: 1;">
+            📥 Télécharger la sauvegarde (JSON)
+          </button>
+          <button class="btn btn-dark" id="btnImportBackup" style="flex: 1;">
+            📤 Importer une sauvegarde
+          </button>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label">Aperçu des données brutes (JSON) :</label>
+          <textarea id="backupJsonText" class="form-input" style="height: 140px; font-family: monospace; font-size: 11px;" readonly></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Associer un document (Devis <-> Facture) -->
+  <div class="modal-backdrop" id="modalLinkDocument">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalLinkTitle">🔗 Associer un document</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: #94a3b8;" id="modalLinkDesc">Sélectionnez le document à associer :</p>
+        <div id="linkDocsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto;">
+          <!-- Rempli dynamiquement -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark btn-modal-close">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale : Onboarding / Guide de prise en main -->
+  <div class="modal-backdrop" id="modalOnboarding">
+    <div class="modal-box onboarding-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">💡</span>
+          <h3 class="modal-title" id="onboardingModalTitle">Guide de prise en main</h3>
+        </div>
+        <button class="modal-close-btn" id="btnCloseOnboardingX">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 22px 24px 16px 24px;">
+        <!-- Conteneur des Étapes (Slides) -->
+        <div class="onboarding-steps-container">
+          
+          <!-- Étape 1 : 100% Local & Confidentialité Totale -->
+          <div class="onboarding-slide active" data-step="1">
+            <div class="onboarding-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+              <span>🔒</span>
+            </div>
+            <h4 class="onboarding-slide-title">1. Aucune Donnée en Ligne : 100% Local & Privé</h4>
+            <p class="onboarding-slide-desc">
+              Cette application fonctionne <strong>exclusivement sur votre appareil</strong>. Aucune donnée personnelle, bancaire ou client n'est envoyée sur un serveur distant ni stockée sur Internet.
+            </p>
+            <div class="onboarding-tip-box">
+              <span class="tip-icon">💾</span>
+              <span><strong>Sauvegarde :</strong> Tout est stocké dans votre navigateur. Utilisez le bouton <strong>💾 Sauvegarde</strong> (en bas à gauche) pour télécharger votre fichier JSON de sauvegarde ou le transférer sur un autre PC.</span>
+            </div>
+          </div>
+
+          <!-- Étape 2 : Profil Émetteur -->
+          <div class="onboarding-slide" data-step="2">
+            <div class="onboarding-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+              <span>👤</span>
+            </div>
+            <h4 class="onboarding-slide-title">2. Configurez votre Profil Émetteur</h4>
+            <p class="onboarding-slide-desc">
+              Cliquez sur <strong>👤 Mon Profil</strong> (en bas à gauche de la barre latérale) pour renseigner votre entreprise, SIRET, email, adresse et coordonnées bancaires (IBAN / BIC).
+            </p>
+            <div class="onboarding-tip-box">
+              <span class="tip-icon">✨</span>
+              <span>Vos informations seront automatiquement insérées par défaut lors de la création de chaque nouveau devis et facture.</span>
+            </div>
+          </div>
+
+          <!-- Étape 3 : Projets & Organisation -->
+          <div class="onboarding-slide" data-step="3">
+            <div class="onboarding-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+              <span>📁</span>
+            </div>
+            <h4 class="onboarding-slide-title">3. Organisation par Projet & Code Couleur</h4>
+            <p class="onboarding-slide-desc">
+              Chaque devis ou facture est obligatoirement rattaché à un <strong>Projet</strong> doté de son propre code couleur.
+            </p>
+            <p class="onboarding-slide-desc">
+              Renommer un projet le synchronise instantanément sur tous ses devis et factures associés. Retrouvez vos documents facilement grâce aux filtres de recherche.
+            </p>
+            <div class="onboarding-tip-box">
+              <span class="tip-icon">🎨</span>
+              <span>Cliquez sur le nom du projet ou la pastille de couleur pour personnaliser visuellement vos dossiers.</span>
+            </div>
+          </div>
+
+          <!-- Étape 4 : Édition de la feuille A4 -->
+          <div class="onboarding-slide" data-step="4">
+            <div class="onboarding-icon-wrap" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">
+              <span>✍️</span>
+            </div>
+            <h4 class="onboarding-slide-title">4. Édition Directe & Calculs Automatiques</h4>
+            <p class="onboarding-slide-desc">
+              Éditez directement la feuille A4 : cliquez sur n'importe quel texte ou montant. Les totaux HT, TVA et TTC sont calculés instantanément.
+            </p>
+            <p class="onboarding-slide-desc">
+              Activez ou masquez en un clic le <strong>RIB Bancaire</strong>, la <strong>Ventilation Acompte / Solde</strong> ou la <strong>Zone de Signature</strong> via les boutons de la barre d'outils.
+            </p>
+            <div class="onboarding-tip-box">
+              <span class="tip-icon">⚡</span>
+              <span>Ajoutez des lignes de prestations illimitées, gérez les acomptes déduits et insérez vos clauses sur-mesure.</span>
+            </div>
+          </div>
+
+          <!-- Étape 5 : Export PDF 1 Page -->
+          <div class="onboarding-slide" data-step="5">
+            <div class="onboarding-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+              <span>📥</span>
+            </div>
+            <h4 class="onboarding-slide-title">5. Export PDF Garanti 1 Seule Page A4</h4>
+            <p class="onboarding-slide-desc">
+              Cliquez sur <strong>📥 Exporter PDF</strong> pour télécharger votre document prêt à l'envoi, calibré avec une garantie stricte <strong>1 seule page A4</strong>.
+            </p>
+            <div class="onboarding-tip-box">
+              <span class="tip-icon">🖨️</span>
+              <span>Vous pouvez également imprimer ou enregistrer en PDF via le moteur d'impression de votre navigateur avec le bouton <strong>🖨️ Imprimer</strong>.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Indicateurs de progression (Points) -->
+        <div class="onboarding-dots-wrap">
+          <div class="onboarding-dot active" data-dot="1"></div>
+          <div class="onboarding-dot" data-dot="2"></div>
+          <div class="onboarding-dot" data-dot="3"></div>
+          <div class="onboarding-dot" data-dot="4"></div>
+          <div class="onboarding-dot" data-dot="5"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button class="btn btn-dark" id="btnSkipOnboarding">Passer l'introduction</button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-dark" id="btnPrevOnboarding" style="display: none;">Précédent</button>
+          <button class="btn btn-primary" id="btnNextOnboarding">Suivant →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conteneur de notifications Toast -->
+  <div class="app-toast-container" id="toastContainer"></div>
+
+  <!-- Scripts JS Dépendances Locales & Modules -->
+  <script src="js/vendor/jspdf.umd.min.js"></script>
+  <script src="js/vendor/jspdf.plugin.autotable.min.js"></script>
+  <script src="js/vendor/html2pdf.bundle.min.js"></script>
+  <script src="js/nomenclature.js"></script>
+  <script src="js/calculations.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/pdf_exporter.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

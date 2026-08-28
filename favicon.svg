@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <linearGradient id="foldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#bae6fd" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded box -->
+  <rect width="64" height="64" rx="14" fill="#0f172a" />
+  
+  <!-- Document Body with shadow -->
+  <path d="M18 10 H38 L48 20 V50 C48 52.2 46.2 54 44 54 H18 C15.8 54 14 52.2 14 50 V14 C14 11.8 15.8 10 18 10 Z" fill="url(#bgGrad)" />
+  
+  <!-- Document Folded Corner -->
+  <path d="M38 10 V18 C38 19.1 38.9 20 40 20 H48 Z" fill="url(#foldGrad)" opacity="0.95" />
+  
+  <!-- Text lines / Table lines on Invoice -->
+  <rect x="20" y="24" width="24" height="3" rx="1.5" fill="#ffffff" opacity="0.9" />
+  <rect x="20" y="31" width="16" height="3" rx="1.5" fill="#ffffff" opacity="0.75" />
+  <rect x="20" y="38" width="24" height="3" rx="1.5" fill="#ffffff" opacity="0.75" />
+  
+  <!-- Green Check Badge in Corner -->
+  <circle cx="44" cy="44" r="9" fill="#10b981" />
+  <path d="M40.5 44 L43 46.5 L47.5 41.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

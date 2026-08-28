@@ -1,0 +1,895 @@
+/* ==========================================================================
+   DOCUMENT.CSS - Mise en page A4 Compacte et Rendu Garanti 1 Seule Page
+   ========================================================================== */
+
+:root {
+  --doc-font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --doc-text-color: #111111;
+  --doc-text-muted: #555555;
+  --doc-header-bg: #000000;
+  --doc-header-color: #ffffff;
+  --doc-border-color: #e2e8f0;
+  --doc-accent-color: #2563eb;
+}
+
+/* Conteneur A4 (100% de la hauteur de l'écran sans header) */
+.a4-page-container {
+  display: flex;
+  justify-content: center;
+  padding: 12px 14px calc(140px + env(safe-area-inset-bottom, 20px)) 14px;
+  background-color: #cbd5e1;
+  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 992px) {
+  .a4-page-container {
+    justify-content: center;
+    padding: 10px 8px calc(150px + env(safe-area-inset-bottom, 20px)) 8px;
+    min-height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+/* Adaptation fluide et responsive sur mobile (iPhone & smartphones) */
+@media screen and (max-width: 768px) {
+  .a4-page-container {
+    padding: calc(54px + env(safe-area-inset-top, 0px)) 6px calc(140px + env(safe-area-inset-bottom, 20px)) 6px !important;
+    overflow-x: hidden !important;
+    display: block !important;
+  }
+
+  .a4-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    padding: 14px 10px !important;
+    margin: 0 auto !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    border-radius: 8px !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .doc-title-input {
+    font-size: 19px !important;
+  }
+
+  .doc-meta-label {
+    width: 110px !important;
+    font-size: 9.5px !important;
+  }
+
+  .doc-meta-value {
+    font-size: 9.5px !important;
+    min-width: 90px !important;
+  }
+
+  .doc-parties-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .party-name {
+    font-size: 10.5px !important;
+  }
+
+  .party-line {
+    font-size: 9.5px !important;
+  }
+
+  /* Tableau de prestations fluide */
+  .doc-items-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .doc-items-table th,
+  .doc-items-table td {
+    padding: 3px 2px !important;
+    font-size: 9px !important;
+  }
+
+  .doc-items-table th.col-qty, .doc-items-table td.col-qty { width: 28px !important; }
+  .doc-items-table th.col-price, .doc-items-table td.col-price { width: 56px !important; }
+  .doc-items-table th.col-tva, .doc-items-table td.col-tva { width: 40px !important; }
+  .doc-items-table th.col-total, .doc-items-table td.col-total { width: 60px !important; }
+  .doc-items-table th.col-actions, .doc-items-table td.col-actions { width: 18px !important; }
+
+  .item-desc-input {
+    font-size: 9px !important;
+  }
+
+  /* Section totaux */
+  .doc-totals-wrapper {
+    justify-content: flex-end !important;
+    width: 100% !important;
+  }
+
+  .doc-totals-table {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .total-line {
+    font-size: 9.5px !important;
+    width: 100% !important;
+  }
+
+  .label-acompte-input,
+  .label-solde-input {
+    width: 105px !important;
+    font-size: 9.5px !important;
+  }
+
+  .percent-acompte-input {
+    width: 20px !important;
+    font-size: 9.5px !important;
+  }
+
+  .total-value {
+    font-size: 9.5px !important;
+  }
+
+  /* Tableau bancaire */
+  .doc-bank-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .doc-bank-table th,
+  .doc-bank-table td {
+    padding: 3px 2px !important;
+    font-size: 8px !important;
+    word-break: break-all;
+  }
+
+  /* Clauses */
+  .clause-row {
+    font-size: 9px !important;
+  }
+}
+
+/* Page A4 Dimensions Fixes & Compactes (210mm x 297mm) */
+.a4-page {
+  position: relative;
+  width: 210mm;
+  height: 296mm;
+  min-height: 296mm;
+  max-height: 296.5mm;
+  padding: 12mm 14mm 10mm 14mm;
+  background: #ffffff;
+  color: var(--doc-text-color);
+  font-family: var(--doc-font-family);
+  font-size: 10.5px;
+  line-height: 1.35;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  page-break-inside: avoid;
+  page-break-after: avoid;
+}
+
+/* Inputs & Contenus éditables transparents */
+.a4-page [contenteditable="true"],
+.a4-page input,
+.a4-page textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px dashed transparent;
+  outline: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+/* Textareas avec auto-resize automatique sans scrollbar visible */
+.a4-page textarea {
+  overflow: hidden;
+  resize: none;
+  word-break: break-word;
+  line-height: 1.35;
+  display: block;
+  width: 100%;
+}
+
+.a4-page [contenteditable="true"]:hover,
+.a4-page input:hover,
+.a4-page textarea:hover {
+  background-color: rgba(37, 99, 235, 0.04);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.a4-page [contenteditable="true"]:focus,
+.a4-page input:focus,
+.a4-page textarea:focus {
+  background-color: rgba(37, 99, 235, 0.08);
+  border-color: var(--doc-accent-color);
+}
+
+/* En-tête : Titre & Numéro / Date */
+.doc-top-section {
+  margin-bottom: 8px;
+}
+
+.doc-title-input {
+  font-size: 22px;
+  font-weight: 800;
+  color: #000000;
+  letter-spacing: -0.4px;
+  margin-bottom: 6px;
+  width: 100%;
+  border: none;
+  display: block;
+  line-height: 1.15;
+}
+
+.doc-meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.doc-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doc-meta-label {
+  width: 130px;
+  font-weight: 500;
+  color: #111;
+  font-size: 10.5px;
+}
+
+.doc-meta-value {
+  font-weight: 600;
+  color: #111;
+  font-size: 10.5px;
+  min-width: 130px;
+}
+
+/* Style de l'input natif de date */
+.doc-date-native-input {
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #111111;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 1px 5px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.doc-date-native-input:hover {
+  border-color: #94a3b8;
+}
+
+.doc-date-native-input:focus {
+  border-color: var(--doc-accent-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* Texte de date formaté français pour l'impression / export PDF */
+.doc-date-formatted-print {
+  display: none;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #111111;
+}
+
+/* Badge Alerte Date (Visible seulement à l'édition si date != aujourd'hui) */
+.date-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  color: #92400e;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  animation: pulse-subtle 2s infinite ease-in-out;
+  cursor: default;
+}
+
+.date-alert-btn {
+  background: #f59e0b;
+  color: #ffffff;
+  border: none;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 8.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.date-alert-btn:hover {
+  background: #d97706;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* Section Coordonnées (Émetteur & Client en 2 colonnes) */
+.doc-parties-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 10px;
+}
+
+.party-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.party-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 2px;
+}
+
+.party-line {
+  color: #222;
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+
+/* Tableau des prestations */
+.doc-items-container {
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.doc-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2px;
+}
+
+.doc-items-table thead tr {
+  background-color: var(--doc-header-bg);
+  color: var(--doc-header-color);
+}
+
+.doc-items-table th {
+  padding: 4px 6px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-align: left;
+  letter-spacing: 0.2px;
+}
+
+.doc-items-table th.col-qty { width: 45px; text-align: center; }
+.doc-items-table th.col-price { width: 95px; text-align: right; }
+.doc-items-table th.col-tva { width: 60px; text-align: right; }
+.doc-items-table th.col-total { width: 95px; text-align: right; }
+.doc-items-table th.col-actions { width: 24px; text-align: center; }
+
+.doc-items-table tbody tr {
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.1s ease;
+}
+
+.doc-items-table tbody tr:hover {
+  background-color: rgba(241, 245, 249, 0.6);
+}
+
+.doc-items-table td {
+  padding: 3px 6px;
+  vertical-align: top;
+  font-size: 10px;
+}
+
+.doc-items-table td.col-qty { text-align: center; }
+.doc-items-table td.col-price { text-align: right; }
+.doc-items-table td.col-tva { text-align: right; }
+.doc-items-table td.col-total { text-align: right; font-weight: 500; }
+
+.item-desc-input {
+  width: 100%;
+  min-height: 16px;
+  line-height: 1.3;
+  font-size: 10px;
+}
+
+/* Texte propre pour impression / PDF sans coupure de textarea */
+.item-desc-print {
+  display: none;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #111111;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* Boutons d'action sur les lignes */
+.row-actions-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+
+.row-actions-btn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.btn-add-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px dashed #cbd5e1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 2px;
+}
+
+.btn-add-item:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Section Totaux avec pointillés (Dotted Leaders) */
+.doc-totals-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.doc-totals-table {
+  width: 330px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+}
+
+.total-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #111;
+  width: 100%;
+}
+
+.total-line.bold {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.total-label {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.label-acompte-input,
+.label-solde-input {
+  width: 130px;
+  max-width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px dashed transparent;
+  padding: 0 2px;
+}
+
+.percent-acompte-input {
+  width: 24px;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px dashed transparent;
+  -moz-appearance: textfield;
+}
+
+.percent-acompte-input::-webkit-outer-spin-button,
+.percent-acompte-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.total-dots {
+  flex-grow: 1;
+  min-width: 8px;
+  border-bottom: 1px dotted #888888;
+  margin: 0 4px;
+  position: relative;
+  top: -3px;
+}
+
+.total-value {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+  flex-shrink: 0;
+  padding-left: 2px;
+}
+
+/* Tableau Coordonnées Bancaires */
+.doc-bank-container {
+  margin-bottom: 8px;
+}
+
+.doc-bank-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.doc-bank-table thead tr {
+  background-color: var(--doc-header-bg);
+  color: var(--doc-header-color);
+}
+
+.doc-bank-table th {
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.doc-bank-table th.col-bank-titulaire { width: 26%; }
+.doc-bank-table th.col-bank-nom { width: 26%; }
+.doc-bank-table th.col-bank-iban { width: 36%; }
+.doc-bank-table th.col-bank-bic { width: 12%; }
+
+.doc-bank-table td {
+  padding: 3px 6px;
+  font-size: 9.5px;
+  vertical-align: top;
+}
+
+.doc-bank-table input {
+  width: 100%;
+  font-size: 9.5px;
+}
+
+.bank-print-val {
+  display: none;
+  font-size: 9.5px;
+}
+
+.bank-print-val.bank-val-wrap {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+.bank-print-val.bank-val-nowrap {
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+/* Section Clauses & Mentions Légales */
+.doc-clauses-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.clause-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.clause-input {
+  flex-grow: 1;
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: #111;
+  width: 100%;
+  min-height: 14px;
+}
+
+/* Rendu textuel non tronqué pour PDF & Impression */
+.clause-text-print {
+  display: none;
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: #111111;
+  word-break: break-word;
+  white-space: pre-wrap;
+  width: 100%;
+}
+
+.btn-remove-clause {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 1px;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.clause-item:hover .btn-remove-clause {
+  opacity: 1;
+}
+
+.btn-remove-clause:hover {
+  color: #ef4444;
+}
+
+.btn-add-clause {
+  align-self: flex-start;
+  font-size: 9.5px;
+  color: var(--doc-accent-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 1px 3px;
+}
+
+.btn-add-clause:hover {
+  text-decoration: underline;
+}
+
+/* Bloc Signature Client */
+.doc-signature-container {
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.signature-title {
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 3px;
+  font-size: 10px;
+}
+
+/* Pied de Page A4 */
+.doc-footer-section {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.doc-footer-text {
+  font-size: 8.5px;
+  color: #64748b;
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+/* ==========================================================================
+   CLASSE TEMPORAIRE POUR EXPORT PDF STRICTEMENT 1 SEULE PAGE (.exporting-pdf)
+   ========================================================================== */
+.exporting-pdf {
+  box-shadow: none !important;
+  border: none !important;
+  background: #ffffff !important;
+  padding: 12mm 14mm 10mm 14mm !important;
+  width: 210mm !important;
+  height: 295mm !important;
+  min-height: 295mm !important;
+  max-height: 295mm !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  page-break-inside: avoid !important;
+  page-break-after: avoid !important;
+}
+
+.exporting-pdf .no-print,
+.exporting-pdf .doc-date-native-input,
+.exporting-pdf .clause-input,
+.exporting-pdf .item-desc-input,
+.exporting-pdf .btn-add-item,
+.exporting-pdf .btn-add-clause,
+.exporting-pdf .row-actions-btn,
+.exporting-pdf .btn-remove-clause,
+.exporting-pdf .date-alert-badge,
+.exporting-pdf #dateAlertBadgeContainer,
+.exporting-pdf .col-actions,
+.exporting-pdf #btnPickClient,
+.exporting-pdf #btnQuickClauses,
+.exporting-pdf .doc-prefix-input-wrap.empty {
+  display: none !important;
+}
+
+/* Affichage garanti des versions textuelles sans coupure ni scroll */
+.exporting-pdf .doc-date-formatted-print,
+.exporting-pdf .clause-text-print,
+.exporting-pdf .item-desc-print,
+.exporting-pdf .bank-print-val {
+  display: block !important;
+}
+
+.exporting-pdf .doc-bank-table input {
+  display: none !important;
+}
+
+.exporting-pdf .doc-date-formatted-print {
+  display: inline-block !important;
+}
+
+.exporting-pdf [contenteditable="true"],
+.exporting-pdf input,
+.exporting-pdf textarea {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.exporting-pdf .doc-items-table th.col-actions,
+.exporting-pdf .doc-items-table td.col-actions {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   RÈGLES D'IMPRESSION ET D'EXPORT NAVIGATEUR (@media print)
+   ========================================================================== */
+@media print {
+  html, body {
+    width: 210mm !important;
+    height: 295mm !important;
+    min-height: 295mm !important;
+    max-height: 295mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  /* Masquer tous les éléments UI de l'application hors page A4 */
+  .app-header,
+  .app-sidebar,
+  .sidebar-backdrop,
+  .sidebar-resizer,
+  .doc-action-bar,
+  .doc-link-banner,
+  .app-toast-container,
+  .modal-backdrop,
+  .no-print,
+  .doc-date-native-input,
+  .clause-input,
+  .item-desc-input,
+  .doc-bank-table input,
+  .date-alert-badge,
+  #dateAlertBadgeContainer,
+  .btn-add-item,
+  .btn-add-clause,
+  .row-actions-btn,
+  .btn-remove-clause,
+  .col-actions,
+  #btnPickClient,
+  #btnQuickClauses,
+  .doc-prefix-input-wrap.empty {
+    display: none !important;
+  }
+
+  /* Rendre les conteneurs neutres et sans scrollbar */
+  .app-main,
+  .editor-viewport,
+  .a4-page-container {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 295mm !important;
+    max-height: 295mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    position: static !important;
+  }
+
+  .doc-date-formatted-print,
+  .clause-text-print,
+  .item-desc-print,
+  .bank-print-val {
+    display: block !important;
+  }
+
+  .doc-date-formatted-print {
+    display: inline-block !important;
+  }
+
+  .doc-items-table th.col-actions,
+  .doc-items-table td.col-actions {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+  }
+
+  .a4-page {
+    width: 210mm !important;
+    height: 295mm !important;
+    min-height: 295mm !important;
+    max-height: 295mm !important;
+    padding: 12mm 14mm 10mm 14mm !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  /* Suppression des bordures de focus et fonds d'input en impression */
+  .a4-page [contenteditable="true"],
+  .a4-page input,
+  .a4-page textarea {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  .doc-items-table thead tr,
+  .doc-bank-table thead tr {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+}

@@ -1134,13 +1134,13 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div class="item-desc-print">${escapeHtml(item.description || '')}</div>
                     </td>
                     <td class="col-qty">
-                      <input type="text" class="item-qty-input" value="${escapeHtml(String(item.qte || '1'))}" style="width: 40px; text-align: center;" />
+                      <input type="text" class="item-qty-input" value="${escapeHtml(String(item.qte || '1'))}" />
                     </td>
                     <td class="col-price">
-                      <input type="text" class="item-price-input" value="${escapeHtml(String(item.prixUnitaire !== undefined ? item.prixUnitaire : '0'))}" style="width: 75px; text-align: right;" />
+                      <input type="text" class="item-price-input" value="${escapeHtml(String(item.prixUnitaire !== undefined ? item.prixUnitaire : '0'))}" />
                     </td>
                     <td class="col-tva">
-                      <input type="text" class="item-tva-input" value="${escapeHtml(String(item.tva !== undefined ? item.tva : '0'))}%" style="width: 45px; text-align: right;" />
+                      <input type="text" class="item-tva-input" value="${escapeHtml(String(item.tva !== undefined ? item.tva : '0'))}%" />
                     </td>
                     <td class="col-total">
                       ${lineCalc.totalHT.toFixed(2).replace('.', ',')}
@@ -2206,7 +2206,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
   }
 
+  // ==========================================================================
+  // CONTRÔLEUR DE ZOOM DOCUMENT (RÉACTIF & SANS IMPACT SUR L'INTERFACE)
+  // ==========================================================================
+  let docZoomLevel = parseFloat(localStorage.getItem('doc_zoom_factor') || '1.0');
+  if (isNaN(docZoomLevel) || docZoomLevel < 0.5 || docZoomLevel > 2.0) {
+    docZoomLevel = 1.0;
+  }
+
+  function setDocZoom(newLevel) {
+    docZoomLevel = Math.max(0.5, Math.min(2.0, Math.round(newLevel * 100) / 100));
+    document.documentElement.style.setProperty('--doc-zoom', docZoomLevel.toString());
+
+    const zoomText = document.getElementById('zoomValText');
+    if (zoomText) {
+      zoomText.textContent = `${Math.round(docZoomLevel * 100)}%`;
+    }
+    localStorage.setItem('doc_zoom_factor', docZoomLevel.toString());
+  }
+
+  function initDocZoom() {
+    setDocZoom(docZoomLevel);
+
+    document.getElementById('btnZoomIn')?.addEventListener('click', () => {
+      setDocZoom(docZoomLevel + 0.1);
+    });
+
+    document.getElementById('btnZoomOut')?.addEventListener('click', () => {
+      setDocZoom(docZoomLevel - 0.1);
+    });
+
+    document.getElementById('btnZoomReset')?.addEventListener('click', () => {
+      setDocZoom(1.0);
+    });
+
+    // Zoom molette (Ctrl + Molette au-dessus de la zone éditeur)
+    const viewport = document.getElementById('editorViewport');
+    viewport?.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          setDocZoom(docZoomLevel + 0.05);
+        } else {
+          setDocZoom(docZoomLevel - 0.05);
+        }
+      }
+    }, { passive: false });
+
+    // Touch Pinch-to-zoom sur smartphone/tablette
+    let initialPinchDistance = null;
+    let initialPinchZoom = docZoomLevel;
+
+    viewport?.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialPinchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialPinchZoom = docZoomLevel;
+      }
+    }, { passive: true });
+
+    viewport?.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && initialPinchDistance) {
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = currentDistance / initialPinchDistance;
+        setDocZoom(initialPinchZoom * factor);
+      }
+    }, { passive: true });
+
+    viewport?.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        initialPinchDistance = null;
+      }
+    }, { passive: true });
+  }
+
+  // Initialisation du zoom document
+  initDocZoom();
+
   // Initialisation du premier document
   const activeId = Store.getActiveDocId();
   selectDocument(activeId);
 });
+

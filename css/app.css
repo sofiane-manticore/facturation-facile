@@ -805,6 +805,75 @@ body {
 }
 
 /* ==========================================================================
+   BARRE D'OUTILS ZOOM DOCUMENT (RÉACTIVE & RESPONSIVE)
+   ========================================================================== */
+.doc-zoom-toolbar {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  border-radius: 20px;
+  padding: 3px 5px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  z-index: 60;
+  user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.btn-zoom {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.btn-zoom:hover {
+  background: #334155;
+  color: #38bdf8;
+  transform: scale(1.08);
+}
+
+.btn-zoom:active {
+  transform: scale(0.94);
+}
+
+.btn-zoom-val {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 44px;
+  text-align: center;
+}
+
+.btn-zoom-val:hover {
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+}
+
+/* ==========================================================================
    ENCART FLOTTANT RÉTRACTABLE DES PARAMÈTRES DU DOCUMENT (BAS DROITE)
    ========================================================================== */
 .doc-floating-panel {
@@ -1815,6 +1884,27 @@ body {
     bottom: calc(100% + 8px) !important;
     max-height: calc(100dvh - 120px) !important;
     z-index: 95;
+  }
+
+  /* Barre de zoom sur mobile : compacte en haut à droite */
+  .doc-zoom-toolbar {
+    top: max(10px, env(safe-area-inset-top, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    padding: 2px 4px;
+    gap: 2px;
+    z-index: 60;
+  }
+
+  .btn-zoom {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+
+  .btn-zoom-val {
+    font-size: 10.5px;
+    padding: 2px 6px;
+    min-width: 40px;
   }
 
   /* Modales en 1 seule colonne */

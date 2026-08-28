@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Facturation Facile - Devis & Factures</title>
+  <title>Facturation Facile 😉 - Devis & Factures</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   
   <!-- Polices & Stylesheets -->
@@ -48,7 +48,7 @@
               <line x1="16" y1="17" x2="8" y2="17"></line>
               <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
-            <span>FACTURATION FACILE</span>
+            <span>FACTURATION FACILE 😉</span>
           </div>
           
           <button class="btn btn-help-subtle" id="btnOpenOnboarding" title="Guide d'utilisation & Aide">
@@ -156,8 +156,21 @@
     <div class="sidebar-resizer" id="sidebarResizer" title="Glisser horizontalement pour redimensionner la barre latérale"></div>
 
     <!-- Zone de Travail (Éditeur A4) -->
-    <section class="editor-viewport">
+    <section class="editor-viewport" id="editorViewport">
       
+      <!-- Outil de Zoom Document Flottant (Responsive, sans zoomer sur l'interface globale) -->
+      <div class="doc-zoom-toolbar no-print" id="docZoomToolbar" title="Zoom du document (Ctrl + Molette)">
+        <button class="btn-zoom" id="btnZoomOut" aria-label="Zoom arrière" title="Zoom arrière (−10%)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <button class="btn-zoom-val" id="btnZoomReset" aria-label="Réinitialiser le zoom" title="Réinitialiser le zoom (100%)">
+          <span id="zoomValText">100%</span>
+        </button>
+        <button class="btn-zoom" id="btnZoomIn" aria-label="Zoom avant" title="Zoom avant (+10%)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+      </div>
+
       <!-- Conteneur de la feuille A4 (Accès direct sans barre parasite au-dessus) -->
       <div class="a4-page-container" id="a4PageContainer">
         <!-- Rendu dynamique via JS -->

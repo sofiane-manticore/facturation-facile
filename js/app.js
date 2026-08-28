@@ -1054,12 +1054,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Construction HTML de la page A4
     a4PageContainer.innerHTML = `
-      <div class="a4-zoom-wrapper" id="a4ZoomWrapper">
-        <div class="a4-page" id="printableA4Document">
-          
-          <!-- Haut de page : Titre & Numérotation -->
-          <div class="doc-top-section">
-            <input type="text" class="doc-title-input" id="docTitleInput" value="${escapeHtml(activeDoc.titreDoc || 'Devis')}" placeholder="Titre du document" />
+      <div class="a4-page" id="printableA4Document">
+        
+        <!-- Haut de page : Titre & Numérotation -->
+        <div class="doc-top-section">
+          <input type="text" class="doc-title-input" id="docTitleInput" value="${escapeHtml(activeDoc.titreDoc || 'Devis')}" placeholder="Titre du document" />
           
           <div class="doc-meta-grid">
             <div class="doc-meta-row">
@@ -1267,7 +1266,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <input type="text" class="doc-footer-text" id="footerTextInput" value="${escapeHtml(activeDoc.basDePage || '')}" placeholder="Mentions légales, SIRET, statut freelance..." />
         </div>
 
-        </div>
       </div>
     `;
 
@@ -1275,9 +1273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       document.querySelectorAll('#printableA4Document textarea').forEach(autoResizeTextarea);
     }, 10);
-
-    // Application immédiate du niveau de zoom document
-    applyDocZoom();
 
     attachDocumentEventListeners();
   }
@@ -2210,129 +2205,6 @@ document.addEventListener('DOMContentLoaded', () => {
       openModal(modalOnboarding);
     }, 300);
   }
-
-  // ==========================================================================
-  // CONTRÔLEUR DE ZOOM DOCUMENT (SLIDER, BOUTONS, MOLETTE & TACTILE)
-  // ==========================================================================
-  let docZoomLevel = parseFloat(localStorage.getItem('doc_zoom_factor') || '1.0');
-  if (isNaN(docZoomLevel) || docZoomLevel < 0.5 || docZoomLevel > 2.0) {
-    docZoomLevel = 1.0;
-  }
-
-  function applyDocZoom() {
-    const page = document.getElementById('printableA4Document');
-    const wrapper = document.getElementById('a4ZoomWrapper');
-
-    if (page) {
-      // Application directe du niveau de zoom sur la page
-      page.style.zoom = docZoomLevel.toString();
-      
-      // Fallback transform si zoom n'est pas pris en compte
-      if (!('zoom' in page.style)) {
-        page.style.transformOrigin = 'top center';
-        page.style.transform = docZoomLevel === 1 ? '' : `scale(${docZoomLevel})`;
-      } else {
-        page.style.transform = '';
-      }
-    }
-
-    if (wrapper) {
-      wrapper.style.transform = '';
-      wrapper.style.width = '100%';
-    }
-
-    // Mise à jour de la position du slider (sauf si l'utilisateur est en train de le glisser)
-    const slider = document.getElementById('docZoomSlider');
-    if (slider && document.activeElement !== slider) {
-      slider.value = Math.round(docZoomLevel * 100).toString();
-    }
-
-    // Mise à jour du badge texte indicateur
-    const zoomText = document.getElementById('zoomValText');
-    if (zoomText) {
-      zoomText.textContent = `${Math.round(docZoomLevel * 100)}%`;
-    }
-  }
-
-  function setDocZoom(newLevel) {
-    docZoomLevel = Math.max(0.5, Math.min(2.0, Math.round(newLevel * 100) / 100));
-    localStorage.setItem('doc_zoom_factor', docZoomLevel.toString());
-    applyDocZoom();
-  }
-
-  function initDocZoom() {
-    applyDocZoom();
-
-    // Slider de zoom interactif
-    const slider = document.getElementById('docZoomSlider');
-    if (slider) {
-      slider.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value, 10);
-        if (!isNaN(val)) {
-          setDocZoom(val / 100);
-        }
-      });
-    }
-
-    document.getElementById('btnZoomIn')?.addEventListener('click', () => {
-      setDocZoom(docZoomLevel + 0.1);
-    });
-
-    document.getElementById('btnZoomOut')?.addEventListener('click', () => {
-      setDocZoom(docZoomLevel - 0.1);
-    });
-
-    document.getElementById('btnZoomReset')?.addEventListener('click', () => {
-      setDocZoom(1.0);
-    });
-
-    // Zoom molette (Ctrl + Molette au-dessus de la zone éditeur)
-    const viewport = document.getElementById('editorViewport');
-    viewport?.addEventListener('wheel', (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        if (e.deltaY < 0) {
-          setDocZoom(docZoomLevel + 0.05);
-        } else {
-          setDocZoom(docZoomLevel - 0.05);
-        }
-      }
-    }, { passive: false });
-
-    // Touch Pinch-to-zoom sur smartphone/tablette
-    let initialPinchDistance = null;
-    let initialPinchZoom = docZoomLevel;
-
-    viewport?.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 2) {
-        initialPinchDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        initialPinchZoom = docZoomLevel;
-      }
-    }, { passive: true });
-
-    viewport?.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 2 && initialPinchDistance) {
-        const currentDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        const factor = currentDistance / initialPinchDistance;
-        setDocZoom(initialPinchZoom * factor);
-      }
-    }, { passive: true });
-
-    viewport?.addEventListener('touchend', (e) => {
-      if (e.touches.length < 2) {
-        initialPinchDistance = null;
-      }
-    }, { passive: true });
-  }
-
-  // Initialisation du zoom document
-  initDocZoom();
 
   // Initialisation du premier document
   const activeId = Store.getActiveDocId();

@@ -1,3 +1,7 @@
+# Dossiers de données privées & exports
+SAVES/
+Exports/
+
 # OS & IDEs
 .DS_Store
 Thumbs.db

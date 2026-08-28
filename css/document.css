@@ -267,11 +267,14 @@
 }
 
 .doc-items-table th.col-desc { width: auto; }
-.doc-items-table th.col-qty { width: 44px; text-align: center; }
-.doc-items-table th.col-price { width: 75px; text-align: right; }
-.doc-items-table th.col-tva { width: 55px; text-align: right; }
-.doc-items-table th.col-total { width: 85px; text-align: right; }
+.doc-items-table th.col-qty { width: 38px; text-align: center; white-space: nowrap; }
+.doc-items-table th.col-price { width: 95px; text-align: right; white-space: nowrap; }
+.doc-items-table th.col-tva { width: 55px; text-align: right; white-space: nowrap; }
+.doc-items-table th.col-total { width: 90px; text-align: right; white-space: nowrap; }
 .doc-items-table th.col-actions { width: 22px; text-align: center; }
+
+.price-header-desktop { display: inline; }
+.price-header-mobile { display: none; }
 
 .doc-items-table tbody tr {
   border-bottom: 1px solid #f1f5f9;
@@ -761,16 +764,23 @@
   .doc-items-table th,
   .doc-items-table td {
     padding: 3px 2px !important;
-    font-size: 9px !important;
-    overflow: hidden !important;
+    font-size: 8.5px !important;
     box-sizing: border-box !important;
     vertical-align: middle !important;
+    white-space: nowrap !important;
   }
 
+  .doc-items-table td:first-child {
+    white-space: normal !important;
+  }
+
+  .price-header-desktop { display: none !important; }
+  .price-header-mobile { display: inline !important; font-weight: 700 !important; }
+
   .doc-items-table th.col-qty, .doc-items-table td.col-qty { width: 28px !important; }
-  .doc-items-table th.col-price, .doc-items-table td.col-price { width: 56px !important; }
-  .doc-items-table th.col-tva, .doc-items-table td.col-tva { width: 40px !important; }
-  .doc-items-table th.col-total, .doc-items-table td.col-total { width: 60px !important; }
+  .doc-items-table th.col-price, .doc-items-table td.col-price { width: 64px !important; }
+  .doc-items-table th.col-tva, .doc-items-table td.col-tva { width: 42px !important; }
+  .doc-items-table th.col-total, .doc-items-table td.col-total { width: 64px !important; }
   .doc-items-table th.col-actions, .doc-items-table td.col-actions { width: 18px !important; }
 
   .item-desc-input {

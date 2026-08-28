@@ -1118,7 +1118,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <tr>
                 <th>Description</th>
                 <th class="col-qty">Qté</th>
-                <th class="col-price">Prix unitaire (${currency})</th>
+                <th class="col-price">
+                  <span class="price-header-desktop">Prix unitaire (${currency})</span>
+                  <span class="price-header-mobile">Prix unit. (${currency})</span>
+                </th>
                 <th class="col-tva">TVA (%)</th>
                 <th class="col-total">Total HT (${currency})</th>
                 <th class="col-actions no-print"></th>

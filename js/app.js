@@ -2209,6 +2209,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
   }
 
+  // ==========================================================================
+  // GESTION DU THÈME (MODE SOMBRE / MODE CLAIR)
+  // ==========================================================================
+  const btnThemeToggle = document.getElementById('btnThemeToggle');
+
+  function getActiveTheme() {
+    return localStorage.getItem('manticore_theme') || 'dark';
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('manticore_theme', theme);
+    if (btnThemeToggle) {
+      btnThemeToggle.title = theme === 'dark' ? 'Passer en Mode Clair ☀️' : 'Passer en Mode Sombre 🌙';
+      btnThemeToggle.setAttribute('aria-label', btnThemeToggle.title);
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || getActiveTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    showToast(next === 'dark' ? 'Mode Sombre activé 🌙' : 'Mode Clair activé ☀️', 'info');
+  }
+
+  function initThemeManager() {
+    const theme = getActiveTheme();
+    applyTheme(theme);
+
+    if (btnThemeToggle) {
+      btnThemeToggle.addEventListener('click', toggleTheme);
+    }
+  }
+
+  initThemeManager();
+
   // Initialisation du premier document
   const activeId = Store.getActiveDocId();
   selectDocument(activeId);

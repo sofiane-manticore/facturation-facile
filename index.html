@@ -13,6 +13,15 @@
   
   <link rel="stylesheet" href="css/document.css">
   <link rel="stylesheet" href="css/app.css">
+  
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('manticore_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
@@ -38,10 +47,10 @@
           </button>
         </div>
 
-        <!-- Logo & Titre de l'application avec bouton Aide discret -->
+        <!-- Logo & Titre de l'application avec switch Thème et bouton Aide -->
         <div class="sidebar-brand-header">
           <div class="brand-logo">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #38bdf8;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -51,9 +60,20 @@
             <span>FACTURATION FACILE</span>
           </div>
           
-          <button class="btn btn-help-subtle" id="btnOpenOnboarding" title="Guide d'utilisation & Aide">
-            <span>💡</span> <span class="help-btn-text">Aide</span>
-          </button>
+          <div class="brand-header-actions">
+            <!-- Joli Bouton Toggle Switch Thème (Mode Clair / Sombre) -->
+            <button class="theme-switch-btn" id="btnThemeToggle" aria-label="Changer le thème" title="Basculer entre Mode Sombre et Mode Clair">
+              <span class="theme-switch-slider">
+                <span class="theme-switch-icon icon-sun">☀️</span>
+                <span class="theme-switch-icon icon-moon">🌙</span>
+              </span>
+            </button>
+
+            <!-- Bouton Aide -->
+            <button class="btn btn-help-subtle" id="btnOpenOnboarding" title="Guide d'utilisation & Aide">
+              <span>💡</span> <span class="help-btn-text">Aide</span>
+            </button>
+          </div>
         </div>
 
         <!-- Bouton Nouveau Document -->

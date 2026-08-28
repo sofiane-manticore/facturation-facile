@@ -50,8 +50,10 @@
 @media screen and (max-width: 768px) {
   .a4-page-container {
     padding: calc(54px + env(safe-area-inset-top, 0px)) 6px calc(140px + env(safe-area-inset-bottom, 20px)) 6px !important;
-    overflow-x: hidden !important;
-    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: flex !important;
+    justify-content: center !important;
   }
 
   .a4-page {

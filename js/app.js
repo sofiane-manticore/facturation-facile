@@ -2220,33 +2220,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function applyDocZoom() {
+    const page = document.getElementById('printableA4Document');
     const wrapper = document.getElementById('a4ZoomWrapper');
-    if (wrapper) {
-      if (docZoomLevel === 1) {
-        wrapper.style.transform = '';
-        wrapper.style.transformOrigin = '';
-        wrapper.style.width = '100%';
-        wrapper.style.marginBottom = '';
+
+    if (page) {
+      // Application directe du niveau de zoom sur la page
+      page.style.zoom = docZoomLevel.toString();
+      
+      // Fallback transform si zoom n'est pas pris en compte
+      if (!('zoom' in page.style)) {
+        page.style.transformOrigin = 'top center';
+        page.style.transform = docZoomLevel === 1 ? '' : `scale(${docZoomLevel})`;
       } else {
-        wrapper.style.transform = `scale(${docZoomLevel})`;
-        wrapper.style.transformOrigin = 'top center';
-        if (docZoomLevel > 1) {
-          wrapper.style.width = `${docZoomLevel * 100}%`;
-          wrapper.style.marginBottom = `${(docZoomLevel - 1) * 350}px`;
-        } else {
-          wrapper.style.width = '100%';
-          wrapper.style.marginBottom = '';
-        }
+        page.style.transform = '';
       }
     }
 
-    // Mise à jour du slider
+    if (wrapper) {
+      wrapper.style.transform = '';
+      wrapper.style.width = '100%';
+    }
+
+    // Mise à jour de la position du slider (sauf si l'utilisateur est en train de le glisser)
     const slider = document.getElementById('docZoomSlider');
-    if (slider) {
+    if (slider && document.activeElement !== slider) {
       slider.value = Math.round(docZoomLevel * 100).toString();
     }
 
-    // Mise à jour du badge texte
+    // Mise à jour du badge texte indicateur
     const zoomText = document.getElementById('zoomValText');
     if (zoomText) {
       zoomText.textContent = `${Math.round(docZoomLevel * 100)}%`;

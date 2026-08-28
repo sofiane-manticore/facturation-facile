@@ -808,21 +808,22 @@ body {
    BARRE D'OUTILS ZOOM DOCUMENT (RÉACTIVE & RESPONSIVE)
    ========================================================================== */
 .doc-zoom-toolbar {
-  position: absolute;
-  top: 14px;
-  right: 18px;
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(18px + env(safe-area-inset-right, 0px));
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(51, 65, 85, 0.8);
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.85);
   border-radius: 20px;
-  padding: 3px 6px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  z-index: 60;
+  padding: 3px 7px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  z-index: 95;
   user-select: none;
+  pointer-events: auto;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -1931,23 +1932,28 @@ body {
 
   /* Barre de zoom sur mobile : compacte en haut à droite */
   .doc-zoom-toolbar {
-    top: max(10px, env(safe-area-inset-top, 0px));
-    right: max(10px, env(safe-area-inset-right, 0px));
-    padding: 2px 4px;
-    gap: 2px;
-    z-index: 60;
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    padding: 2px 5px;
+    gap: 3px;
+    z-index: 95;
+    pointer-events: auto;
   }
 
   .btn-zoom {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     font-size: 13px;
   }
 
+  .zoom-range-slider {
+    width: 60px;
+  }
+
   .btn-zoom-val {
-    font-size: 10.5px;
-    padding: 2px 6px;
-    min-width: 40px;
+    font-size: 10px;
+    padding: 2px 5px;
+    min-width: 36px;
   }
 
   /* Modales en 1 seule colonne */

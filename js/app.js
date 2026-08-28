@@ -2206,8 +2206,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
   }
 
+  // ==========================================================================
+  // GESTIONNAIRE DE THÈME NEUMORPHIQUE (LIGHT & DARK MODE)
+  // ==========================================================================
+  const btnThemeToggle = document.getElementById('btnThemeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+
+  function getActiveTheme() {
+    let saved = localStorage.getItem('manticore_theme');
+    if (!saved) {
+      saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    return saved;
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('manticore_theme', theme);
+    if (themeIcon) {
+      themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+    if (btnThemeToggle) {
+      btnThemeToggle.title = theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre (Dark Mode)';
+      btnThemeToggle.setAttribute('aria-label', btnThemeToggle.title);
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || getActiveTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    showToast(next === 'dark' ? 'Mode Sombre activé 🌙' : 'Mode Clair activé ☀️', 'info');
+  }
+
+  function initThemeManager() {
+    const theme = getActiveTheme();
+    applyTheme(theme);
+
+    if (btnThemeToggle) {
+      btnThemeToggle.addEventListener('click', toggleTheme);
+    }
+  }
+
+  // Initialisation du thème
+  initThemeManager();
+
   // Initialisation du premier document
   const activeId = Store.getActiveDocId();
   selectDocument(activeId);
 });
+
 

@@ -695,9 +695,9 @@ document.addEventListener('DOMContentLoaded', () => {
         linkPill = `<span class="doc-card-links-pill">🔗 ${escapeHtml(doc.linkedDevisNumero)}</span>`;
       }
 
-      // Couleur personnalisée du badge projet
+      // Couleur personnalisée du badge projet avec fond sombre constant garanti
       const pColor = doc.prefixColor || '#38bdf8';
-      const prefixBadgeStyle = `background-color: ${pColor}26; color: ${pColor}; border: 1px solid ${pColor}66;`;
+      const prefixBadgeStyle = `background-color: #0f172a !important; color: ${pColor} !important; border: 1px solid ${pColor}80 !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);`;
 
       card.innerHTML = `
         <div class="doc-card-row-1">
@@ -1018,10 +1018,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const currency = activeDoc.devise || '€';
 
     const docPrefixText = document.getElementById('docPrefixText');
-    if (docPrefixText) docPrefixText.textContent = activeDoc.prefix || 'PROJET';
+    const projectColor = activeDoc.prefixColor || '#38bdf8';
+    if (docPrefixText) {
+      docPrefixText.textContent = activeDoc.prefix || 'PROJET';
+      docPrefixText.style.color = projectColor;
+    }
+
+    const btnOpenRenameModal = document.getElementById('btnOpenRenameModal');
+    if (btnOpenRenameModal) {
+      btnOpenRenameModal.style.borderColor = `${projectColor}80`;
+    }
 
     const docProjectColorInput = document.getElementById('docProjectColorInput');
-    if (docProjectColorInput) docProjectColorInput.value = activeDoc.prefixColor || '#38bdf8';
+    if (docProjectColorInput) docProjectColorInput.value = projectColor;
 
     // Synchronisation du bouton d'archivage
     const archiveDocText = document.getElementById('archiveDocText');
@@ -1565,6 +1574,10 @@ document.addEventListener('DOMContentLoaded', () => {
     docProjectColorInput.addEventListener('input', (e) => {
       if (activeDoc) {
         activeDoc.prefixColor = e.target.value;
+        const docPrefixText = document.getElementById('docPrefixText');
+        if (docPrefixText) docPrefixText.style.color = e.target.value;
+        const btnOpenRenameModal = document.getElementById('btnOpenRenameModal');
+        if (btnOpenRenameModal) btnOpenRenameModal.style.borderColor = `${e.target.value}80`;
         if (activeDoc.prefix) {
           Store.updateProjectColor(activeDoc.prefix, activeDoc.prefixColor);
         }

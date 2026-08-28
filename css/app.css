@@ -591,14 +591,17 @@ body {
 .doc-card-prefix {
   font-size: 8.5px;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
-  max-width: 90px;
+  max-width: 100px;
   text-overflow: ellipsis;
   overflow: hidden;
+  background-color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.2px;
 }
 
 .doc-card-number {
@@ -1092,13 +1095,13 @@ body {
 .project-name-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  gap: 6px;
+  background: #0f172a !important;
+  border: 1px solid #334155;
   color: var(--primary);
   font-weight: 700;
   font-size: 11.5px;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1106,10 +1109,42 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .project-name-btn:hover {
+  background: #1e293b !important;
   border-color: var(--primary);
+}
+
+.project-quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0f172a !important;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.project-quick-chip:hover {
+  background: #1e293b !important;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.project-chip-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
 .toggle-btn {

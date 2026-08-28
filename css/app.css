@@ -596,9 +596,6 @@ body {
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
-  max-width: 100px;
-  text-overflow: ellipsis;
-  overflow: hidden;
   background-color: #0f172a !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   letter-spacing: 0.2px;

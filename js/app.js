@@ -1965,27 +1965,31 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
           <span class="template-card-title">${escapeHtml(tpl.name)}</span>
-          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-            ${badge}
-            ${tpl.isCustom ? `<button type="button" class="btn btn-sm btn-danger-outline btn-delete-template" title="Supprimer ce modèle personnalisé" style="padding: 2px 6px; font-size: 11px; line-height: 1;">🗑️</button>` : ''}
-          </div>
+          ${badge}
         </div>
         <p class="template-card-desc">${escapeHtml(tpl.description || '')}</p>
-        <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="font-size: 11px; color: var(--text-dim);">${tpl.items?.length || 0} lignes</span>
-          <button class="btn btn-primary btn-sm btn-use-template">Utiliser ce modèle</button>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            ${tpl.isCustom ? `<button type="button" class="btn btn-sm btn-danger-outline btn-delete-template" title="Supprimer ce modèle personnalisé" style="padding: 4px 8px; font-size: 11px; color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">🗑️ Supprimer</button>` : ''}
+            <button type="button" class="btn btn-primary btn-sm btn-use-template">Utiliser ce modèle</button>
+          </div>
         </div>
       `;
 
       if (tpl.isCustom) {
-        card.querySelector('.btn-delete-template')?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement le modèle "${tpl.name}" ?`)) {
-            Store.deleteUserTemplate(tpl.id);
-            showToast(`Modèle "${tpl.name}" supprimé !`, 'info');
-            openTemplatesModal();
-          }
-        });
+        const btnDelete = card.querySelector('.btn-delete-template');
+        if (btnDelete) {
+          btnDelete.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement le modèle "${tpl.name}" ?`)) {
+              Store.deleteUserTemplate(tpl.id);
+              showToast(`Modèle "${tpl.name}" supprimé !`, 'info');
+              openTemplatesModal();
+            }
+          });
+        }
       }
 
       card.querySelector('.btn-use-template').addEventListener('click', (e) => {

@@ -811,10 +811,12 @@ body {
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   right: calc(20px + env(safe-area-inset-right, 0px));
   left: auto;
+  width: 350px;
+  max-width: calc(100vw - 28px);
   z-index: 90;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   font-family: inherit;
 }
 
@@ -830,7 +832,8 @@ body {
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  min-width: 180px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .floating-panel-toggle {
@@ -853,6 +856,17 @@ body {
   border-color: var(--primary);
 }
 
+.doc-floating-panel.open .floating-panel-toggle {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary), var(--primary-shadow);
+  color: var(--primary);
+}
+
+.doc-floating-panel.open .floating-panel-toggle .floating-toggle-title {
+  color: var(--primary);
+}
+
 .floating-toggle-left {
   display: flex;
   align-items: center;
@@ -872,16 +886,21 @@ body {
 .floating-toggle-badge {
   font-size: 10px;
   font-weight: 700;
-  background: rgba(56, 189, 248, 0.15);
+  background: transparent;
   color: var(--primary);
-  padding: 1px 6px;
+  padding: 0;
   border-radius: 10px;
+}
+
+.floating-toggle-badge .status-pill {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .floating-toggle-arrow {
   font-size: 8px;
   color: var(--text-muted);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, color 0.15s ease;
 }
 
 .btn-print-prominent {
@@ -934,9 +953,10 @@ body {
   position: absolute;
   bottom: calc(100% + 8px);
   right: 0;
-  left: auto;
-  width: 350px;
-  max-width: calc(100vw - 28px);
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-color);
   border-radius: 14px;
@@ -948,13 +968,17 @@ body {
   max-height: calc(100dvh - 160px);
   overflow-y: auto;
   z-index: 95;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .doc-floating-panel.open .floating-panel-body {
   display: flex;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary), var(--primary-shadow), var(--shadow-lg);
 }
 
 .doc-floating-panel.open .floating-toggle-arrow {
+  color: var(--primary);
   transform: rotate(180deg);
 }
 
@@ -1731,11 +1755,13 @@ body {
     right: calc(12px + env(safe-area-inset-right, 0px));
     left: auto;
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: 350px;
+    max-width: calc(100vw - 24px);
   }
 
   .floating-panel-body {
-    width: calc(100vw - 24px);
-    max-width: 380px;
+    width: 100%;
+    max-width: 100%;
     max-height: calc(100dvh - 160px);
   }
 

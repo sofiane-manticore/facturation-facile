@@ -844,7 +844,8 @@ body {
   padding: 7px 10px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  position: relative;
   gap: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -870,7 +871,8 @@ body {
 .floating-toggle-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
 }
 
 .floating-toggle-icon {
@@ -890,6 +892,8 @@ body {
   color: var(--primary);
   padding: 0;
   border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .floating-toggle-badge .status-pill {
@@ -898,6 +902,8 @@ body {
 }
 
 .floating-toggle-arrow {
+  position: absolute;
+  right: 12px;
   font-size: 8px;
   color: var(--text-muted);
   transition: transform 0.2s ease, color 0.15s ease;
@@ -1801,7 +1807,11 @@ body {
   .floating-panel-toggle {
     flex: 1.1 !important;
     width: auto !important;
-    padding: 6px 6px !important;
+    padding: 6px 16px 6px 6px !important;
+  }
+
+  .floating-toggle-arrow {
+    right: 5px !important;
   }
 
   .floating-toggle-badge {

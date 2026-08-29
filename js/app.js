@@ -1610,6 +1610,12 @@ document.addEventListener('DOMContentLoaded', () => {
         Store.saveDoc(activeDoc);
         renderSidebar();
         renderLinkBanner();
+        const floatingToggleBadge = document.getElementById('floatingToggleBadge');
+        if (floatingToggleBadge) {
+          floatingToggleBadge.innerHTML = activeDoc.archived
+            ? '📦 Archivé'
+            : getStatusBadgeHtml(activeDoc.status || 'brouillon');
+        }
         showToast(`Statut mis à jour : ${e.target.value}`, 'info');
       }
     });

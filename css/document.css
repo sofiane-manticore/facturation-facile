@@ -52,21 +52,30 @@
 
 /* Animations de transition au changement et chargement de document */
 .a4-page.doc-anim-exit {
-  opacity: 0 !important;
-  transform: translate3d(0, 24px, 0) scale(0.95) !important;
-  transition: opacity 0.22s ease-in, transform 0.22s ease-in !important;
+  animation: a4DocExit 0.22s ease-in both !important;
 }
 
-.a4-page.doc-anim-enter {
-  animation: a4DocEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes a4DocEnter {
-  from {
+@keyframes a4DocExit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
     opacity: 0;
     transform: translate3d(0, 24px, 0) scale(0.95);
   }
-  to {
+}
+
+.a4-page.doc-anim-enter {
+  animation: a4DocEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+@keyframes a4DocEnter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.95);
+  }
+  100% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
   }

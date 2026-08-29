@@ -244,7 +244,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (animate && isDifferentDoc && currentDocEl && !isSwitchingDoc) {
       isSwitchingDoc = true;
       currentDocEl.classList.remove('doc-anim-enter');
+      // Forcer le recalcul de style pour exécuter l'animation de sortie immédiatement
+      void currentDocEl.offsetWidth;
       currentDocEl.classList.add('doc-anim-exit');
+
       setTimeout(() => {
         activeDoc = JSON.parse(JSON.stringify(doc));
         Store.setActiveDocId(doc.id);
@@ -252,6 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderActiveDocument();
         const newDocEl = document.getElementById('printableA4Document');
         if (newDocEl) {
+          newDocEl.classList.remove('doc-anim-exit');
+          void newDocEl.offsetWidth;
           newDocEl.classList.add('doc-anim-enter');
         }
         isSwitchingDoc = false;

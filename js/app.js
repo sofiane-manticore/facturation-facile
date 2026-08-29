@@ -897,9 +897,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Organiser les documents : devis avec leurs factures liées en sous-arbre, puis factures autonomes
       const devisDocs = group.docs.filter(d => (d.type || '').startsWith('devis'));
-      const linkedInvoiceIds = new Set();
+      const allInvoiceDocs = group.docs.filter(d => !(d.type || '').startsWith('devis'));
 
-      // Trouver toutes les factures rattachées à ces devis
+      const linkedInvoiceIds = new Set();
       devisDocs.forEach(devis => {
         const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
         linkedInvs.forEach(inv => linkedInvoiceIds.add(inv.id));
@@ -907,21 +907,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const standaloneDocs = group.docs.filter(d => !(d.type || '').startsWith('devis') && !linkedInvoiceIds.has(d.id));
 
-      // Calcul comptable exact du montant total du projet :
-      // Les factures liées (acompte, solde) font partie de l'échéancier du devis parent.
-      // Total du projet = Somme des Devis + Somme des Factures directes autonomes (évite le double comptage).
-      let projectTotal = 0;
+      // Calcul des montants cumulés :
+      // 1. Total cumulé de tous les devis du projet
+      let devisTotal = 0;
       devisDocs.forEach(d => {
         const t = Calculations.calculateDocumentTotals(d);
-        projectTotal += (t.totalTTC || 0);
+        devisTotal += (t.totalTTC || 0);
       });
-      standaloneDocs.forEach(d => {
+
+      // 2. Total cumulé de toutes les factures du projet (Acomptes, Soldes et Factures directes)
+      let facturesTotal = 0;
+      allInvoiceDocs.forEach(d => {
         const t = Calculations.calculateDocumentTotals(d);
-        projectTotal += (t.totalTTC || 0);
+        facturesTotal += (t.totalTTC || 0);
       });
 
       const devisCount = devisDocs.length;
-      const factureCount = group.docs.length - devisCount;
+      const factureCount = allInvoiceDocs.length;
 
       // Gestion de l'affichage de multiples clients
       const distinctClients = Array.from(group.clientsSet);
@@ -943,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cardContainer.className = `project-card-container ${containsActive ? 'has-active' : ''}`;
       cardContainer.style.borderLeft = `3.5px solid ${pColor}`;
 
-      // En-tête large du projet
+      // En-tête large du projet avec affichage simultané des totaux Devis & Facturé
       const headerEl = document.createElement('div');
       headerEl.className = 'project-card-header';
       headerEl.innerHTML = `
@@ -952,7 +954,25 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="project-color-pill" style="background: ${pColor}; color: ${pColor};"></span>
             <span class="project-main-title">${escapeHtml(group.displayName)}</span>
           </div>
-          <span class="project-total-badge" style="color: ${pColor};">${Calculations.formatEuro(projectTotal)}</span>
+          <div class="project-totals-badges">
+            ${factureCount > 0 ? `
+              <div class="project-total-chip chip-facture" title="Total cumulé des factures émises (Acomptes + Soldes + Factures directes)">
+                <span class="chip-label">Facturé</span>
+                <span class="chip-amount" style="color: ${pColor};">${Calculations.formatEuro(facturesTotal)}</span>
+              </div>
+            ` : ''}
+            ${devisCount > 0 ? `
+              <div class="project-total-chip chip-devis" title="Total cumulé des devis émis">
+                <span class="chip-label">Devis</span>
+                <span class="chip-amount">${Calculations.formatEuro(devisTotal)}</span>
+              </div>
+            ` : ''}
+            ${factureCount === 0 && devisCount === 0 ? `
+              <div class="project-total-chip chip-devis">
+                <span class="chip-amount">0,00 €</span>
+              </div>
+            ` : ''}
+          </div>
         </div>
         <div class="project-card-header-bottom">
           <span class="project-client-name" title="${escapeHtml(clientFullTitle || clientDisplay)}">🏢 ${escapeHtml(clientDisplay)}</span>

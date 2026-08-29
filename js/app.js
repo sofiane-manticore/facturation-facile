@@ -1128,7 +1128,8 @@ document.addEventListener('DOMContentLoaded', () => {
       cardContainer.appendChild(bodyEl);
 
       // Trouver le client existant dans ce projet (s'il existe déjà)
-      const existingClientObj = group.docs.find(d => d.client && d.client.nom)?.client || null;
+      const existingClientDoc = group.docs.find(d => d.client && d.client.nom);
+      const existingClientObj = existingClientDoc ? existingClientDoc.client : null;
 
       // Pied de boîte : boutons directs pour ajouter un Devis ou une Facture dans ce projet
       const footerEl = document.createElement('div');
@@ -1146,12 +1147,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       footerEl.querySelector('.btn-create-devis').addEventListener('click', (e) => {
         e.stopPropagation();
-        createDocumentDirectlyInProject(group.name, pColor, 'devis', existingClientObj);
+        createDocumentDirectlyInProject(group.name, pColor, 'devis', existingClientObj, group.docs);
       });
 
       footerEl.querySelector('.btn-create-facture').addEventListener('click', (e) => {
         e.stopPropagation();
-        createDocumentDirectlyInProject(group.name, pColor, 'facture', existingClientObj);
+        createDocumentDirectlyInProject(group.name, pColor, 'facture', existingClientObj, group.docs);
       });
 
       cardContainer.appendChild(footerEl);
@@ -1162,77 +1163,58 @@ document.addEventListener('DOMContentLoaded', () => {
   /**
    * Crée directement un nouveau document dans un projet existant sans popup
    */
-  function createDocumentDirectlyInProject(projectName, projectColor, type = 'devis', clientData = null) {
+  function createDocumentDirectlyInProject(projectName, projectColor, type = 'devis', clientData = null, projectDocs = []) {
     const profile = Store.getProfile();
     const existingDocs = Store.getAllDocs();
-    const todayISO = Nomenclature.getTodayISO();
-    const docNumber = Nomenclature.generateDocNumber(type, todayISO, existingDocs);
+    const cleanProjectName = projectName === 'SANS_PROJET' ? '' : projectName;
     const defaultTemplate = Templates.getBuiltinTemplates().find(t => t.type === type) || Templates.getBuiltinTemplates()[0];
 
-    const cleanProjectName = projectName === 'SANS_PROJET' ? '' : projectName;
+    // Récupérer l'émetteur depuis le profil utilisateur ou depuis un document existant du projet
+    const existingDocWithEmetteur = (projectDocs || []).find(d => d.emetteur && (d.emetteur.nom || d.emetteur.ligne1)) || null;
 
-    const newDoc = {
-      id: 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      isTemplate: false,
-      status: 'brouillon',
-      type: type,
-      prefix: cleanProjectName,
-      prefixColor: projectColor || '#38bdf8',
-      archived: false,
-      linkedDevisId: null,
-      linkedDevisNumero: null,
-      titreDoc: defaultTemplate.titreDoc || (Nomenclature.DOC_TYPES[type]?.title || (type === 'facture' ? 'Facture' : 'Devis')),
-      labelNumero: defaultTemplate.labelNumero || (type === 'facture' ? 'Numéro de facture' : 'Numéro de devis'),
-      numero: docNumber,
-      labelDate: 'Date d\'émission',
-      dateEmission: todayISO,
-
-      emetteur: {
-        nom: profile.nom || '',
-        statut: profile.statut || '',
-        adresse: profile.adresse || '',
-        siret: profile.siret || '',
-        rcs: profile.rcs || '',
-        email: profile.email || '',
-        telephone: profile.telephone || '',
-        logoUrl: profile.logoUrl || ''
-      },
-
-      client: clientData ? JSON.parse(JSON.stringify(clientData)) : {
-        nom: '',
-        adresse: '',
-        siret: '',
-        email: '',
-        telephone: ''
-      },
-
-      items: defaultTemplate.items && defaultTemplate.items.length > 0 
-        ? JSON.parse(JSON.stringify(defaultTemplate.items))
-        : [{ id: 'item_1', description: 'Prestation standard', qte: '1', prixUnitaire: 0, tva: 0 }],
-
-      showAcompteSolde: type === 'devis',
-      acomptePercent: 40,
-      labelAcompte: 'Acompte à la commande',
-      labelSolde: 'Solde à la livraison',
-
-      showBanque: true,
-      banque: { ...profile.banque },
-
-      clauses: defaultTemplate.clauses && defaultTemplate.clauses.length > 0
-        ? [...defaultTemplate.clauses]
-        : (type === 'facture' ? [
-          'TVA non applicable, article 293 B du Code Général des Impôts.',
-          'Conditions de paiement : Paiement à réception de facture.'
-        ] : [
-          'TVA non applicable, article 293 B du Code Général des Impôts.',
-          'Validité du devis : 30 jours à compter de la date d\'émission.'
-        ]),
-      showSignature: type === 'devis',
-      signatureText: 'Bon pour accord\nDate et signature précédées de la mention manuscrite :',
-      basDePage: profile.mentionBasDePage || ''
+    const emetteurFinal = {
+      nom: profile.nom || existingDocWithEmetteur?.emetteur?.nom || '',
+      ligne1: profile.ligne1 || existingDocWithEmetteur?.emetteur?.ligne1 || '',
+      ligne2: profile.ligne2 || existingDocWithEmetteur?.emetteur?.ligne2 || '',
+      email: profile.email || existingDocWithEmetteur?.emetteur?.email || ''
     };
+
+    const clientFinal = clientData ? {
+      nom: clientData.nom || '',
+      adresse1: clientData.adresse1 || clientData.adresse || '',
+      adresse2: clientData.adresse2 || '',
+      email: clientData.email || ''
+    } : {
+      nom: '',
+      adresse1: '',
+      adresse2: '',
+      email: ''
+    };
+
+    const newDoc = Templates.createDocumentFromTemplate(defaultTemplate, {
+      profile,
+      existingDocs,
+      client: clientFinal
+    });
+
+    newDoc.type = type;
+    newDoc.prefix = cleanProjectName;
+    newDoc.prefixColor = projectColor || '#38bdf8';
+    newDoc.archived = false;
+    newDoc.emetteur = emetteurFinal;
+    newDoc.client = clientFinal;
+
+    if (profile.banque) {
+      newDoc.banque = {
+        titulaire: profile.banque.titulaire || '',
+        banque: profile.banque.banque || '',
+        iban: profile.banque.iban || '',
+        bic: profile.banque.bic || ''
+      };
+    }
+    if (profile.mentionBasDePage) {
+      newDoc.basDePage = profile.mentionBasDePage;
+    }
 
     Store.saveDoc(newDoc);
     selectDocument(newDoc.id);

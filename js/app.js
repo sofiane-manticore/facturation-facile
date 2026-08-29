@@ -216,18 +216,45 @@ document.addEventListener('DOMContentLoaded', () => {
     if (soldePctEl) soldePctEl.textContent = `(${totals.soldePercent}%)`;
   }
 
+  let isSwitchingDoc = false;
+
   /**
-   * Sélectionne un document actif
+   * Sélectionne un document actif avec animation discrète
    */
-  function selectDocument(docId) {
+  function selectDocument(docId, animate = true) {
     const doc = Store.getDoc(docId);
     if (!doc) {
       const all = Store.getAllDocs();
       if (all.length > 0) {
-        selectDocument(all[0].id);
+        selectDocument(all[0].id, false);
       } else {
         openNewDocModal('devis');
       }
+      return;
+    }
+
+    // Sur tablette/mobile, fermer le tiroir automatiquement
+    if (window.innerWidth <= 992) {
+      closeMobileSidebar();
+    }
+
+    const currentDocEl = document.getElementById('printableA4Document');
+    const isDifferentDoc = activeDoc && activeDoc.id !== doc.id;
+
+    if (animate && isDifferentDoc && currentDocEl && !isSwitchingDoc) {
+      isSwitchingDoc = true;
+      currentDocEl.classList.add('doc-anim-exit');
+      setTimeout(() => {
+        activeDoc = JSON.parse(JSON.stringify(doc));
+        Store.setActiveDocId(doc.id);
+        renderSidebar();
+        renderActiveDocument();
+        const newDocEl = document.getElementById('printableA4Document');
+        if (newDocEl) {
+          newDocEl.classList.add('doc-anim-enter');
+        }
+        isSwitchingDoc = false;
+      }, 90);
       return;
     }
 
@@ -235,11 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
     Store.setActiveDocId(doc.id);
     renderSidebar();
     renderActiveDocument();
-
-    // Sur tablette/mobile, fermer le tiroir automatiquement
-    if (window.innerWidth <= 992) {
-      closeMobileSidebar();
-    }
   }
 
   // ==========================================================================

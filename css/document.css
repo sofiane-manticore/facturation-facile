@@ -46,6 +46,29 @@
   overflow: hidden;
   page-break-inside: avoid;
   page-break-after: avoid;
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+/* Animations de transition discrète au changement de document */
+.a4-page.doc-anim-exit {
+  opacity: 0 !important;
+  transform: translateY(8px) !important;
+  transition: opacity 0.09s ease-in, transform 0.09s ease-in !important;
+}
+
+.a4-page.doc-anim-enter {
+  animation: a4DocEnter 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes a4DocEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Inputs & Contenus éditables transparents */
@@ -961,6 +984,10 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: space-between !important;
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   /* Suppression des bordures de focus et fonds d'input en impression */

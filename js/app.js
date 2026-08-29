@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isSwitchingDoc = false;
 
   /**
-   * Sélectionne un document actif avec animation discrète
+   * Sélectionne un document actif avec animation
    */
   function selectDocument(docId, animate = true) {
     const doc = Store.getDoc(docId);
@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (animate && isDifferentDoc && currentDocEl && !isSwitchingDoc) {
       isSwitchingDoc = true;
+      currentDocEl.classList.remove('doc-anim-enter');
       currentDocEl.classList.add('doc-anim-exit');
       setTimeout(() => {
         activeDoc = JSON.parse(JSON.stringify(doc));
@@ -254,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
           newDocEl.classList.add('doc-anim-enter');
         }
         isSwitchingDoc = false;
-      }, 90);
+      }, 210);
       return;
     }
 
@@ -262,6 +263,11 @@ document.addEventListener('DOMContentLoaded', () => {
     Store.setActiveDocId(doc.id);
     renderSidebar();
     renderActiveDocument();
+
+    const newDocEl = document.getElementById('printableA4Document');
+    if (newDocEl && animate) {
+      newDocEl.classList.add('doc-anim-enter');
+    }
   }
 
   // ==========================================================================

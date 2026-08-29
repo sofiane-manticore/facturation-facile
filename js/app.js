@@ -892,7 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
       group.docs.forEach(d => {
         const t = Calculations.calculateDocumentTotals(d);
         projectTotal += (t.totalTTC || 0);
-        if (d.type.startsWith('devis')) devisCount++;
+        if ((d.type || '').startsWith('devis')) devisCount++;
         else factureCount++;
       });
 
@@ -931,7 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bodyEl.className = 'project-card-body';
 
       // Organiser les documents : devis avec leurs factures liées en sous-arbre, puis factures autonomes
-      const devisDocs = group.docs.filter(d => d.type.startsWith('devis'));
+      const devisDocs = group.docs.filter(d => (d.type || '').startsWith('devis'));
       const linkedInvoiceIds = new Set();
 
       // Trouver toutes les factures rattachées à ces devis
@@ -940,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
         linkedInvs.forEach(inv => linkedInvoiceIds.add(inv.id));
       });
 
-      const standaloneDocs = group.docs.filter(d => !d.type.startsWith('devis') && !linkedInvoiceIds.has(d.id));
+      const standaloneDocs = group.docs.filter(d => !(d.type || '').startsWith('devis') && !linkedInvoiceIds.has(d.id));
 
       // 1. Rendu des Groupes Devis + Dépendances
       devisDocs.forEach(devis => {

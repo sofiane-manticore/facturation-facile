@@ -53,6 +53,15 @@ const Calculations = {
   },
 
   /**
+   * Formate un montant en Euros (€)
+   * @param {number} amount 
+   * @returns {string}
+   */
+  formatEuro(amount) {
+    return this.formatCurrency(amount, '€');
+  },
+
+  /**
    * Calcule les totaux d'une ligne de prestation
    * @param {Object} item - { description, qte, prixUnitaire, tva }
    * @returns {Object} { totalHT, montantTVA, totalTTC }

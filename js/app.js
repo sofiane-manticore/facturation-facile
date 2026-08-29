@@ -905,19 +905,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const pColor = group.color || '#38bdf8';
       const cardContainer = document.createElement('div');
       cardContainer.className = `project-card-container ${containsActive ? 'has-active' : ''}`;
-      cardContainer.style.border = `2px solid ${pColor}80`;
+      cardContainer.style.borderLeft = `3.5px solid ${pColor}`;
 
       // En-tête large du projet
       const headerEl = document.createElement('div');
       headerEl.className = 'project-card-header';
-      headerEl.style.borderBottom = `2px solid ${pColor}`;
       headerEl.innerHTML = `
         <div class="project-card-header-top">
           <div class="project-title-wrapper">
-            <span class="project-color-pill" style="background: ${pColor};"></span>
-            <span class="project-main-title" style="color: ${pColor};">${escapeHtml(group.displayName)}</span>
+            <span class="project-color-pill" style="background: ${pColor}; color: ${pColor};"></span>
+            <span class="project-main-title">${escapeHtml(group.displayName)}</span>
           </div>
-          <span class="project-total-badge">${Calculations.formatEuro(projectTotal)}</span>
+          <span class="project-total-badge" style="color: ${pColor};">${Calculations.formatEuro(projectTotal)}</span>
         </div>
         <div class="project-card-header-bottom">
           <span class="project-client-name">🏢 ${escapeHtml(group.client || 'Client standard')}</span>
@@ -982,10 +981,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (linkedInvs.length > 0) {
           const depContainer = document.createElement('div');
           depContainer.className = 'tree-dependencies-container';
-          depContainer.style.borderLeftColor = `${pColor}90`;
+          depContainer.style.borderLeft = `1.5px solid ${pColor}90`;
           depContainer.innerHTML = `
             <div class="tree-dependencies-label">
-              <span>↳ Factures rattachées (${linkedInvs.length}) :</span>
+              <span>↳ Factures rattachées (${linkedInvs.length})</span>
             </div>
           `;
 

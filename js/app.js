@@ -298,10 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmBtn.disabled = true;
 
     const typeNames = {
-      'devis': 'Nouveau Devis',
-      'facture': 'Nouvelle Facture',
-      'facture_solde': 'Nouvelle Facture de Solde',
-      'facture_acompte': 'Nouvelle Facture d\'Acompte'
+      'devis': 'Nouveau Devis Vierge',
+      'facture': 'Nouvelle Facture Vierge (100%)',
+      'facture_acompte': 'Nouvelle Facture d\'Acompte Vierge',
+      'facture_solde': 'Nouvelle Facture de Solde Vierge'
     };
     titleEl.textContent = `📁 ${typeNames[type] || 'Nouveau Document'}`;
 
@@ -1857,6 +1857,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('menuCreateDevis')?.addEventListener('click', () => openNewDocModal('devis'));
+    document.getElementById('menuCreateFactureStandard')?.addEventListener('click', () => openNewDocModal('facture'));
+    document.getElementById('menuCreateFactureAcompte')?.addEventListener('click', () => openNewDocModal('facture_acompte'));
+    document.getElementById('menuCreateFactureSolde')?.addEventListener('click', () => openNewDocModal('facture_solde'));
     document.getElementById('menuOpenTemplates')?.addEventListener('click', openTemplatesModal);
   }
 
@@ -1955,19 +1958,35 @@ document.addEventListener('DOMContentLoaded', () => {
     allTemplates.forEach(tpl => {
       const card = document.createElement('div');
       card.className = 'template-card';
-      const badge = tpl.isCustom ? '<span style="color: #ec4899; font-size: 10px; font-weight:700;">PERSO</span>' : '<span style="color: #38bdf8; font-size: 10px; font-weight:700;">OFFICIEL</span>';
+      const badge = tpl.isCustom 
+        ? '<span style="background: rgba(236, 72, 153, 0.15); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.35); font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">PERSO</span>' 
+        : '<span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">OFFICIEL</span>';
       
       card.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
           <span class="template-card-title">${escapeHtml(tpl.name)}</span>
-          ${badge}
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+            ${badge}
+            ${tpl.isCustom ? `<button type="button" class="btn btn-sm btn-danger-outline btn-delete-template" title="Supprimer ce modèle personnalisé" style="padding: 2px 6px; font-size: 11px; line-height: 1;">🗑️</button>` : ''}
+          </div>
         </div>
         <p class="template-card-desc">${escapeHtml(tpl.description || '')}</p>
         <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 11px; color: #64748b;">${tpl.items?.length || 0} lignes</span>
+          <span style="font-size: 11px; color: var(--text-dim);">${tpl.items?.length || 0} lignes</span>
           <button class="btn btn-primary btn-sm btn-use-template">Utiliser ce modèle</button>
         </div>
       `;
+
+      if (tpl.isCustom) {
+        card.querySelector('.btn-delete-template')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Êtes-vous sûr de vouloir supprimer définitivement le modèle "${tpl.name}" ?`)) {
+            Store.deleteUserTemplate(tpl.id);
+            showToast(`Modèle "${tpl.name}" supprimé !`, 'info');
+            openTemplatesModal();
+          }
+        });
+      }
 
       card.querySelector('.btn-use-template').addEventListener('click', (e) => {
         e.stopPropagation();

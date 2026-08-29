@@ -370,6 +370,15 @@ const Store = {
     this.saveDoc(invoice);
   },
 
+  unlinkInvoice(invoiceId) {
+    const invoice = this.getDoc(invoiceId);
+    if (!invoice) return;
+    invoice.linkedDevisId = null;
+    invoice.linkedDevisNumero = null;
+    this.saveDoc(invoice);
+    return invoice;
+  },
+
   createInvoiceFromDevis(devisId, invoiceType = 'facture_solde') {
     const devis = this.getDoc(devisId);
     if (!devis) return null;

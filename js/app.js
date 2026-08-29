@@ -1391,6 +1391,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       document.getElementById('btnUnlinkDevis')?.addEventListener('click', () => {
         if (confirm('Voulez-vous dissocier cette facture de son devis d\'origine ?')) {
+          activeDoc.linkedDevisId = null;
+          activeDoc.linkedDevisNumero = null;
           Store.unlinkInvoice(activeDoc.id);
           renderLinkBanner();
           renderSidebar();

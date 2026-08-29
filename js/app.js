@@ -1969,11 +1969,8 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <p class="template-card-desc">${escapeHtml(tpl.description || '')}</p>
         <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-          <span style="font-size: 11px; color: var(--text-dim);">${tpl.items?.length || 0} lignes</span>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            ${tpl.isCustom ? `<button type="button" class="btn btn-sm btn-danger-outline btn-delete-template" title="Supprimer ce modèle personnalisé" style="padding: 4px 8px; font-size: 11px; color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">🗑️ Supprimer</button>` : ''}
-            <button type="button" class="btn btn-primary btn-sm btn-use-template">Utiliser ce modèle</button>
-          </div>
+          <span style="font-size: 11px; color: var(--text-dim);">${tpl.items?.length || 0} prestations</span>
+          ${tpl.isCustom ? `<button type="button" class="btn btn-delete-template" title="Supprimer ce modèle personnalisé"><span>🗑️</span> <span>Supprimer</span></button>` : ''}
         </div>
       `;
 
@@ -1991,12 +1988,6 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
       }
-
-      card.querySelector('.btn-use-template').addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeModal(modalTemplates);
-        openNewDocModal(tpl.type || 'devis', tpl.id);
-      });
 
       card.addEventListener('click', () => {
         closeModal(modalTemplates);

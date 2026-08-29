@@ -2174,9 +2174,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Fermeture au clic sur le backdrop UNIQUEMENT si le clic a commencé ET fini sur le backdrop (évite la fermeture involontaire lors de la sélection de texte)
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-    backdrop.addEventListener('click', (e) => {
-      if (e.target === backdrop) closeModal(backdrop);
+    let startedOnBackdrop = false;
+
+    backdrop.addEventListener('mousedown', (e) => {
+      startedOnBackdrop = (e.target === backdrop);
+    });
+
+    backdrop.addEventListener('mouseup', (e) => {
+      if (startedOnBackdrop && e.target === backdrop) {
+        closeModal(backdrop);
+      }
+      startedOnBackdrop = false;
     });
   });
 

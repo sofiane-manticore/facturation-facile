@@ -1403,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Modale d'association de documents
+   * Modale d'association de documents avec priorisation par projet et démarcation
    */
   function openLinkModal(mode) {
     const listEl = document.getElementById('linkDocsList');
@@ -1413,38 +1413,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     listEl.innerHTML = '';
 
+    const currentProject = (activeDoc?.prefix || '').trim().toUpperCase().replace(/\s+/g, '_');
+    const currentColor = activeDoc?.prefixColor || '#38bdf8';
+
+    const renderDocRow = (doc, isDevis) => {
+      const docColor = doc.prefixColor || '#38bdf8';
+      const totals = Calculations.calculateDocumentTotals(doc);
+      const typeLabel = isDevis ? 'Devis' : (Nomenclature.DOC_TYPES[doc.type]?.label || 'Facture');
+      const projName = doc.prefix ? doc.prefix : 'SANS PROJET';
+
+      const row = document.createElement('div');
+      row.style.cssText = `background:#0f172a; padding:10px 14px; border:1px solid #334155; border-left: 4px solid ${docColor}; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap: 10px; margin-bottom: 6px;`;
+
+      row.innerHTML = `
+        <div style="min-width: 0; flex: 1;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span style="font-weight:700; color:#fff; font-size:13px;">${isDevis ? '📄 Devis' : '🧾 ' + typeLabel} ${escapeHtml(doc.numero || 'Sans numéro')}</span>
+            <span style="font-size:10px; font-weight:700; padding: 1px 6px; border-radius: 4px; color: ${docColor}; background: ${docColor}20; border: 1px solid ${docColor}50;">
+              ${escapeHtml(projName)}
+            </span>
+          </div>
+          <div style="color:#94a3b8; font-size:11px; margin-top: 3px;">
+            🏢 ${escapeHtml(doc.client?.nom || 'Client non spécifié')} • Total: <strong style="color:#f8fafc;">${totals.formatted.totalTTC}</strong>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm btn-select-link" style="flex-shrink: 0;">
+          ${isDevis ? 'Choisir ce devis' : 'Associer'}
+        </button>
+      `;
+
+      row.querySelector('.btn-select-link').addEventListener('click', () => {
+        if (mode === 'invoice_to_devis') {
+          Store.linkInvoiceToDevis(doc.id, activeDoc.id);
+          closeModal(modalLinkDocument);
+          renderLinkBanner();
+          renderSidebar();
+          showToast(`Facture ${doc.numero} reliée au devis ${activeDoc.numero} (Projet : ${activeDoc.prefix || 'Sans projet'}) !`, 'success');
+        } else {
+          Store.linkInvoiceToDevis(activeDoc.id, doc.id);
+          activeDoc.linkedDevisId = doc.id;
+          activeDoc.linkedDevisNumero = doc.numero;
+          activeDoc.prefix = doc.prefix || '';
+          activeDoc.prefixColor = doc.prefixColor || '#38bdf8';
+          closeModal(modalLinkDocument);
+          renderActiveDocument();
+          renderSidebar();
+          showToast(`Facture rattachée au devis ${doc.numero} (Projet : ${doc.prefix || 'Sans projet'}) !`, 'success');
+        }
+      });
+
+      return row;
+    };
+
     if (mode === 'invoice_to_devis') {
       titleEl.textContent = '🔗 Associer une facture au Devis';
       descEl.textContent = `Sélectionnez une facture existante à relier au devis ${activeDoc.numero} :`;
 
       const allInvoices = Store.getAllDocs().filter(d => !d.type.startsWith('devis') && d.id !== activeDoc.id);
       if (allInvoices.length === 0) {
-        listEl.innerHTML = '<p style="color:#64748b; font-size:12px;">Aucune facture disponible.</p>';
+        listEl.innerHTML = '<p style="color:#64748b; font-size:12px; padding: 10px 0;">Aucune facture disponible.</p>';
       } else {
-        allInvoices.forEach(inv => {
-          const row = document.createElement('div');
-          row.style.cssText = 'background:#0f172a; padding:10px 14px; border:1px solid #334155; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
-          const invTotals = Calculations.calculateDocumentTotals(inv);
-          const typeLabel = Nomenclature.DOC_TYPES[inv.type]?.label || 'Facture';
+        const sameProj = allInvoices.filter(d => currentProject && (d.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') === currentProject);
+        const otherProj = allInvoices.filter(d => !currentProject || (d.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') !== currentProject);
 
-          row.innerHTML = `
-            <div>
-              <div style="font-weight:700; color:#fff; font-size:13px;">${escapeHtml(inv.numero)} <span style="font-size:11px; color:#94a3b8;">(${typeLabel})</span></div>
-              <div style="color:#94a3b8; font-size:11px;">Client: ${escapeHtml(inv.client?.nom || '')} • Montant: ${invTotals.formatted.totalTTC}</div>
-            </div>
-            <button class="btn btn-primary btn-sm btn-select-link">Associer</button>
-          `;
+        if (sameProj.length > 0) {
+          const sectionHeader = document.createElement('div');
+          sectionHeader.style.cssText = `color: ${currentColor}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin: 4px 0 6px 0; display: flex; align-items: center; gap: 6px;`;
+          sectionHeader.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: ${currentColor};"></span> Factures du même projet (${escapeHtml(activeDoc.prefix || 'Sans projet')}) — Recommandé`;
+          listEl.appendChild(sectionHeader);
 
-          row.querySelector('.btn-select-link').addEventListener('click', () => {
-            Store.linkInvoiceToDevis(inv.id, activeDoc.id);
-            closeModal(modalLinkDocument);
-            renderLinkBanner();
-            renderSidebar();
-            showToast(`Facture ${inv.numero} reliée au devis ${activeDoc.numero} (Projet : ${activeDoc.prefix || 'Sans projet'}) !`, 'success');
-          });
+          sameProj.forEach(inv => listEl.appendChild(renderDocRow(inv, false)));
+        }
 
-          listEl.appendChild(row);
-        });
+        if (otherProj.length > 0) {
+          if (sameProj.length > 0) {
+            const divider = document.createElement('div');
+            divider.style.cssText = 'margin: 16px 0 10px 0; border-top: 1px dashed rgba(255, 255, 255, 0.15); position: relative; text-align: center;';
+            divider.innerHTML = `<span style="position: relative; top: -9px; background: #1e293b; padding: 0 10px; font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Factures d'autres projets</span>`;
+            listEl.appendChild(divider);
+          }
+          otherProj.forEach(inv => listEl.appendChild(renderDocRow(inv, false)));
+        }
       }
     } else {
       titleEl.textContent = '🔗 Relier cette Facture à un Devis';
@@ -1452,35 +1501,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const allDevis = Store.getAllDevis();
       if (allDevis.length === 0) {
-        listEl.innerHTML = '<p style="color:#64748b; font-size:12px;">Aucun devis disponible.</p>';
+        listEl.innerHTML = '<p style="color:#64748b; font-size:12px; padding: 10px 0;">Aucun devis disponible.</p>';
       } else {
-        allDevis.forEach(dev => {
-          const row = document.createElement('div');
-          row.style.cssText = 'background:#0f172a; padding:10px 14px; border:1px solid #334155; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
-          const devTotals = Calculations.calculateDocumentTotals(dev);
+        const sameProj = allDevis.filter(d => currentProject && (d.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') === currentProject);
+        const otherProj = allDevis.filter(d => !currentProject || (d.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') !== currentProject);
 
-          row.innerHTML = `
-            <div>
-              <div style="font-weight:700; color:#fff; font-size:13px;">Devis ${escapeHtml(dev.numero)} ${dev.prefix ? `<span style="font-size:10px; color:#38bdf8;">[${escapeHtml(dev.prefix)}]</span>` : ''}</div>
-              <div style="color:#94a3b8; font-size:11px;">Client: ${escapeHtml(dev.client?.nom || '')} • Total: ${devTotals.formatted.totalTTC}</div>
-            </div>
-            <button class="btn btn-primary btn-sm btn-select-link">Choisir ce devis</button>
-          `;
+        if (sameProj.length > 0) {
+          const sectionHeader = document.createElement('div');
+          sectionHeader.style.cssText = `color: ${currentColor}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin: 4px 0 6px 0; display: flex; align-items: center; gap: 6px;`;
+          sectionHeader.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background: ${currentColor};"></span> Devis du même projet (${escapeHtml(activeDoc.prefix || 'Sans projet')}) — Recommandé`;
+          listEl.appendChild(sectionHeader);
 
-          row.querySelector('.btn-select-link').addEventListener('click', () => {
-            Store.linkInvoiceToDevis(activeDoc.id, dev.id);
-            activeDoc.linkedDevisId = dev.id;
-            activeDoc.linkedDevisNumero = dev.numero;
-            activeDoc.prefix = dev.prefix || '';
-            activeDoc.prefixColor = dev.prefixColor || '#38bdf8';
-            closeModal(modalLinkDocument);
-            renderActiveDocument();
-            renderSidebar();
-            showToast(`Facture rattachée au devis ${dev.numero} (Projet : ${dev.prefix || 'Sans projet'}) !`, 'success');
-          });
+          sameProj.forEach(dev => listEl.appendChild(renderDocRow(dev, true)));
+        }
 
-          listEl.appendChild(row);
-        });
+        if (otherProj.length > 0) {
+          if (sameProj.length > 0) {
+            const divider = document.createElement('div');
+            divider.style.cssText = 'margin: 16px 0 10px 0; border-top: 1px dashed rgba(255, 255, 255, 0.15); position: relative; text-align: center;';
+            divider.innerHTML = `<span style="position: relative; top: -9px; background: #1e293b; padding: 0 10px; font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Devis d'autres projets</span>`;
+            listEl.appendChild(divider);
+
+            const hint = document.createElement('p');
+            hint.style.cssText = 'font-size: 11px; color: #94a3b8; margin: 0 0 8px 0;';
+            hint.textContent = 'ℹ️ Note : Rattacher cette facture à un devis d\'un autre projet déplacera automatiquement cette facture dans ce projet.';
+            listEl.appendChild(hint);
+          }
+          otherProj.forEach(dev => listEl.appendChild(renderDocRow(dev, true)));
+        }
       }
     }
 

@@ -818,7 +818,7 @@ body {
 }
 
 /* ==========================================================================
-   5.1 VUE ARBORESCENTE PAR PROJETS
+   5.1 VUE ARBORESCENTE PAR PROJETS (GROSSE DIV PAR PROJET & DÉPENDANCES)
    ========================================================================== */
 .projects-tree-view {
   flex: 1 1 0;
@@ -828,7 +828,7 @@ body {
   padding: 10px 12px 10px max(12px, env(safe-area-inset-left, 0px));
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 /* Barre d'outils arborescence */
@@ -836,245 +836,270 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 8px;
+  padding: 6px 10px;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  font-size: 11px;
+  border-radius: 8px;
+  font-size: 11.5px;
   color: var(--text-muted);
 }
 
 .tree-toolbar-actions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .tree-tool-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 10.5px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
   transition: all 0.15s ease;
 }
 
 .tree-tool-btn:hover {
-  background: var(--bg-card);
-  color: var(--primary);
-}
-
-/* Nœud dossier de projet */
-.project-tree-node {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.project-tree-node:hover {
-  border-color: rgba(56, 189, 248, 0.4);
-}
-
-.project-tree-node.has-active {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25);
-}
-
-/* En-tête du projet (Folder Header) */
-.project-tree-header {
-  padding: 8px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  cursor: pointer;
-  user-select: none;
-  background: var(--bg-surface);
-  border-bottom: 1px solid transparent;
-  transition: background 0.15s ease;
-}
-
-.project-tree-header:hover {
   background: var(--bg-card-hover);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
-.project-tree-node.expanded .project-tree-header {
-  border-bottom-color: var(--border-color);
+/* Grosse Div par Projet */
+.project-card-container {
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.project-header-left {
+.project-card-container:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* En-tête large de la boîte de projet */
+.project-card-header {
+  padding: 10px 12px;
+  background: #0f172a !important;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.project-card-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-title-wrapper {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }
 
-.project-chevron {
-  font-size: 9px;
-  color: var(--text-dim);
-  transition: transform 0.2s ease;
-  width: 12px;
-  text-align: center;
-  display: inline-block;
-}
-
-.project-tree-node.expanded .project-chevron {
-  transform: rotate(90deg);
-}
-
-.project-tree-badge {
-  font-size: 8.5px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  background-color: #0f172a !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  letter-spacing: 0.2px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  max-width: 130px;
-}
-
-.project-client-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  flex: 1;
-  min-width: 0;
-}
-
-.project-header-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.project-color-pill {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
-.project-count-pill {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: 10px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
+.project-main-title {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-.project-total-text {
-  font-size: 11.5px;
-  font-weight: 700;
+.project-total-badge {
+  font-size: 13px;
+  font-weight: 800;
   color: var(--primary);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* Conteneur des documents enfants */
-.project-tree-children {
-  display: none;
-  flex-direction: column;
-  padding: 4px 6px 6px 12px;
-  gap: 3px;
-  background: var(--bg-card);
-  position: relative;
-}
-
-.project-tree-children::before {
-  content: '';
-  position: absolute;
-  top: 6px;
-  bottom: 12px;
-  left: 18px;
-  width: 2px;
-  background: var(--border-color);
-  border-radius: 1px;
-}
-
-.project-tree-node.expanded .project-tree-children {
+.project-card-header-bottom {
   display: flex;
-}
-
-/* Élément document dans l'arborescence */
-.tree-doc-item {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 6px 8px 6px 16px;
+  align-items: center;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.project-client-name {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 180px;
+}
+
+.project-doc-count-chip {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+/* Corps de la boîte de projet */
+.project-card-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-card-container.collapsed .project-card-body,
+.project-card-container.collapsed .project-card-footer {
+  display: none;
+}
+
+/* Bloc Devis & Arborescence des dépendances */
+.project-devis-tree-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* Carte du Devis */
+.tree-doc-card {
+  padding: 8px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
-  gap: 6px;
-  position: relative;
-  background: transparent;
-}
-
-.tree-doc-item:hover {
-  background: var(--bg-card-hover);
-}
-
-.tree-doc-item.active {
-  background: var(--bg-card-hover);
-  border-left: 3px solid var(--primary);
-  font-weight: 600;
-}
-
-.tree-doc-item.is-archived {
-  opacity: 0.6;
-}
-
-.tree-doc-left {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tree-doc-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+}
+
+.tree-doc-card.active {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+  border-left: 4px solid var(--primary);
+}
+
+.tree-doc-card-row1 {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 6px;
-  min-width: 0;
-  flex: 1;
 }
 
-.tree-doc-icon {
+.tree-doc-card-num {
   font-size: 12px;
-  flex-shrink: 0;
-}
-
-.tree-doc-num {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-main);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.tree-doc-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.tree-doc-total {
-  font-size: 11px;
   font-weight: 700;
   color: var(--text-main);
-  white-space: nowrap;
 }
 
-/* Document enfant rattaché (acompte / solde sous devis) */
-.tree-doc-item.is-linked-child {
-  padding-left: 28px;
+.tree-doc-card-amount {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary);
 }
 
-.tree-doc-item.is-linked-child::before {
-  content: '↳';
-  position: absolute;
-  left: 14px;
+.tree-doc-card-row2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+/* Branche des dépendances (Factures liées au devis) */
+.tree-dependencies-container {
+  margin-left: 12px;
+  padding-left: 10px;
+  border-left: 2px dashed rgba(56, 189, 248, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.tree-dependencies-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
   color: var(--text-dim);
-  font-size: 11px;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tree-linked-invoice-card {
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tree-linked-invoice-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+}
+
+.tree-linked-invoice-card.active {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+  border-left: 4px solid #a855f7;
+}
+
+/* Section Factures Directes (hors devis) */
+.project-standalone-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.project-standalone-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Pied de la boîte de projet */
+.project-card-footer {
+  padding: 6px 10px 10px 10px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
 }
 
 /* Pied de la barre latérale */

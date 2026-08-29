@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let activeDoc = null;
   let activeViewMode = localStorage.getItem('manticore_sidebar_view_mode') || 'list'; // 'list' ou 'tree'
-  let isFiltersCollapsed = localStorage.getItem('manticore_hide_filters') === 'true';
+  let isFiltersCollapsed = localStorage.getItem('manticore_hide_filters') !== 'false'; // Replié par défaut !
   const expandedProjects = new Set();
   let activeFilter = 'all'; // 'all', 'devis', 'facture'
   let filterStatus = 'all'; // 'all', 'brouillon', 'envoye', 'accepte', 'paye', 'annule'
@@ -825,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Rendu de la vue arborescente par projets (Projets -> Devis -> Factures d'acompte/solde rattachées)
+   * Rendu de la vue par projets (Grosse div par projet avec couleur, entête et visualisation des dépendances devis -> factures)
    */
   function renderProjectsTree(filteredDocs, isArchivedView) {
     if (!projectsTreeViewEl) return;
@@ -843,11 +843,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Grouper les documents par projet
     const projectGroups = new Map();
     filteredDocs.forEach(doc => {
-      const pName = (doc.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') || '__NO_PROJECT__';
+      const pName = (doc.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') || 'SANS_PROJET';
       if (!projectGroups.has(pName)) {
         projectGroups.set(pName, {
           name: pName,
-          displayName: pName === '__NO_PROJECT__' ? 'SANS PROJET' : pName,
+          displayName: pName === 'SANS_PROJET' ? 'SANS PROJET' : pName,
           color: doc.prefixColor || '#38bdf8',
           client: doc.client?.nom || '',
           docs: []
@@ -857,15 +857,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!grp.client && doc.client?.nom) grp.client = doc.client.nom;
       grp.docs.push(doc);
     });
-
-    // Par défaut, si aucun projet n'a encore été ouvert, ouvrir tous les projets
-    if (expandedProjects.size === 0) {
-      projectGroups.forEach((_, key) => expandedProjects.add(key));
-    }
-    // S'assurer que le projet du document actif est bien déplié
-    if (activeDoc && activeDoc.prefix) {
-      expandedProjects.add(activeDoc.prefix.trim().toUpperCase().replace(/\s+/g, '_'));
-    }
 
     // Barre d'outils de l'arborescence (Compteurs & Déplier/Replier tout)
     const toolbar = document.createElement('div');
@@ -880,63 +871,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toolbar.querySelector('#btnTreeExpandAll').addEventListener('click', (e) => {
       e.stopPropagation();
-      projectGroups.forEach((_, key) => expandedProjects.add(key));
-      renderProjectsTree(filteredDocs, isArchivedView);
+      projectsTreeViewEl.querySelectorAll('.project-card-container').forEach(el => el.classList.remove('collapsed'));
     });
 
     toolbar.querySelector('#btnTreeCollapseAll').addEventListener('click', (e) => {
       e.stopPropagation();
-      expandedProjects.clear();
-      renderProjectsTree(filteredDocs, isArchivedView);
+      projectsTreeViewEl.querySelectorAll('.project-card-container').forEach(el => el.classList.add('collapsed'));
     });
 
     projectsTreeViewEl.appendChild(toolbar);
 
-    // Rendu de chaque dossier de projet
+    // Rendu de chaque grosse boîte de projet
     projectGroups.forEach(group => {
-      const isExpanded = expandedProjects.has(group.name);
       const containsActive = activeDoc && group.docs.some(d => d.id === activeDoc.id);
 
       // Calcul du montant total du projet
       let projectTotal = 0;
+      let devisCount = 0;
+      let factureCount = 0;
       group.docs.forEach(d => {
         const t = Calculations.calculateDocumentTotals(d);
         projectTotal += (t.totalTTC || 0);
+        if (d.type.startsWith('devis')) devisCount++;
+        else factureCount++;
       });
-
-      const nodeEl = document.createElement('div');
-      nodeEl.className = `project-tree-node ${isExpanded ? 'expanded' : ''} ${containsActive ? 'has-active' : ''}`;
 
       const pColor = group.color || '#38bdf8';
-      const badgeStyle = `background-color: #0f172a !important; color: ${pColor} !important; border: 1px solid ${pColor}80 !important;`;
+      const cardContainer = document.createElement('div');
+      cardContainer.className = `project-card-container ${containsActive ? 'has-active' : ''}`;
+      cardContainer.style.border = `2px solid ${pColor}80`;
 
-      nodeEl.innerHTML = `
-        <div class="project-tree-header">
-          <div class="project-header-left">
-            <span class="project-chevron">▶</span>
-            <span style="color: ${pColor}; font-size: 13px;">📁</span>
-            <span class="project-tree-badge" style="${badgeStyle}">${escapeHtml(group.displayName)}</span>
-            ${group.client ? `<span class="project-client-label">• ${escapeHtml(group.client)}</span>` : ''}
+      // En-tête large du projet
+      const headerEl = document.createElement('div');
+      headerEl.className = 'project-card-header';
+      headerEl.style.borderBottom = `2px solid ${pColor}`;
+      headerEl.innerHTML = `
+        <div class="project-card-header-top">
+          <div class="project-title-wrapper">
+            <span class="project-color-pill" style="background: ${pColor};"></span>
+            <span class="project-main-title" style="color: ${pColor};">${escapeHtml(group.displayName)}</span>
           </div>
-          <div class="project-header-right">
-            <span class="project-count-pill">${group.docs.length}</span>
-            <span class="project-total-text">${Calculations.formatEuro(projectTotal)}</span>
-          </div>
+          <span class="project-total-badge">${Calculations.formatEuro(projectTotal)}</span>
         </div>
-        <div class="project-tree-children"></div>
+        <div class="project-card-header-bottom">
+          <span class="project-client-name">🏢 ${escapeHtml(group.client || 'Client standard')}</span>
+          <span class="project-doc-count-chip">${devisCount > 0 ? `${devisCount} devis` : ''}${devisCount > 0 && factureCount > 0 ? ' • ' : ''}${factureCount > 0 ? `${factureCount} fact.` : ''}</span>
+        </div>
       `;
 
-      // Clic sur l'en-tête du projet pour déplier / replier
-      nodeEl.querySelector('.project-tree-header').addEventListener('click', () => {
-        if (expandedProjects.has(group.name)) {
-          expandedProjects.delete(group.name);
-        } else {
-          expandedProjects.add(group.name);
-        }
-        renderProjectsTree(filteredDocs, isArchivedView);
+      // Clic sur l'en-tête pour replier / déplier
+      headerEl.addEventListener('click', () => {
+        cardContainer.classList.toggle('collapsed');
       });
 
-      const childrenContainer = nodeEl.querySelector('.project-tree-children');
+      cardContainer.appendChild(headerEl);
+
+      // Corps du projet
+      const bodyEl = document.createElement('div');
+      bodyEl.className = 'project-card-body';
 
       // Organiser les documents : devis avec leurs factures liées en sous-arbre, puis factures autonomes
       const devisDocs = group.docs.filter(d => d.type.startsWith('devis'));
@@ -950,54 +942,152 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const standaloneDocs = group.docs.filter(d => !d.type.startsWith('devis') && !linkedInvoiceIds.has(d.id));
 
-      // Fonction helper pour créer une ligne de document dans l'arbre
-      function createTreeDocRow(doc, isChild = false) {
-        const row = document.createElement('div');
-        const isActive = activeDoc && activeDoc.id === doc.id;
-        row.className = `tree-doc-item ${isActive ? 'active' : ''} ${doc.archived ? 'is-archived' : ''} ${isChild ? 'is-linked-child' : ''}`;
-        
-        const totals = Calculations.calculateDocumentTotals(doc);
-        const statusBadge = doc.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(doc.status);
+      // 1. Rendu des Groupes Devis + Dépendances
+      devisDocs.forEach(devis => {
+        const devisGroupEl = document.createElement('div');
+        devisGroupEl.className = 'project-devis-tree-group';
 
-        let icon = '📄';
-        if (doc.type === 'facture_acompte') icon = '⏳';
-        else if (doc.type === 'facture_solde') icon = '⚖️';
-        else if (doc.type === 'facture') icon = '💶';
+        const isDevisActive = activeDoc && activeDoc.id === devis.id;
+        const devisTotals = Calculations.calculateDocumentTotals(devis);
+        const devisDateDisplay = Nomenclature.formatDateToFR(devis.dateEmission);
+        const devisStatusBadge = devis.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(devis.status);
 
-        row.innerHTML = `
-          <div class="tree-doc-left">
-            <span class="tree-doc-icon">${icon}</span>
-            <span class="tree-doc-num" title="${escapeHtml(doc.numero || '')}">${escapeHtml(doc.numero || 'Sans numéro')}</span>
+        // Carte du devis
+        const devisCardEl = document.createElement('div');
+        devisCardEl.className = `tree-doc-card ${isDevisActive ? 'active' : ''} ${devis.archived ? 'is-archived' : ''}`;
+        devisCardEl.innerHTML = `
+          <div class="tree-doc-card-row1">
+            <span class="tree-doc-card-num">📄 Devis <strong>${escapeHtml(devis.numero || 'Sans numéro')}</strong></span>
+            <span class="tree-doc-card-amount">${devisTotals.formatted.totalTTC}</span>
           </div>
-          <div class="tree-doc-right">
-            ${statusBadge}
-            <span class="tree-doc-total">${totals.formatted.totalTTC}</span>
+          <div class="tree-doc-card-row2">
+            <span>📅 ${devisDateDisplay}</span>
+            ${devisStatusBadge}
           </div>
         `;
-
-        row.addEventListener('click', (e) => {
+        devisCardEl.addEventListener('click', (e) => {
           e.stopPropagation();
-          selectDocument(doc.id);
+          selectDocument(devis.id);
+        });
+        devisGroupEl.appendChild(devisCardEl);
+
+        // Factures liées (Acomptes / Solde)
+        const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
+        if (linkedInvs.length > 0) {
+          const depContainer = document.createElement('div');
+          depContainer.className = 'tree-dependencies-container';
+          depContainer.style.borderLeftColor = `${pColor}90`;
+          depContainer.innerHTML = `
+            <div class="tree-dependencies-label">
+              <span>↳ Factures rattachées (${linkedInvs.length}) :</span>
+            </div>
+          `;
+
+          linkedInvs.forEach(inv => {
+            const isInvActive = activeDoc && activeDoc.id === inv.id;
+            const invTotals = Calculations.calculateDocumentTotals(inv);
+            const invDateDisplay = Nomenclature.formatDateToFR(inv.dateEmission);
+            const invStatusBadge = inv.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(inv.status);
+            
+            let invIcon = '⏳';
+            let invLabel = 'Acompte';
+            if (inv.type === 'facture_solde') {
+              invIcon = '⚖️';
+              invLabel = 'Solde';
+            } else if (inv.type === 'facture') {
+              invIcon = '💶';
+              invLabel = 'Facture';
+            }
+
+            const invCardEl = document.createElement('div');
+            invCardEl.className = `tree-linked-invoice-card ${isInvActive ? 'active' : ''} ${inv.archived ? 'is-archived' : ''}`;
+            invCardEl.innerHTML = `
+              <div class="tree-doc-card-row1">
+                <span class="tree-doc-card-num" style="font-size: 11.5px;">${invIcon} ${invLabel} <strong>${escapeHtml(inv.numero || 'Sans numéro')}</strong></span>
+                <span class="tree-doc-card-amount" style="font-size: 11.5px;">${invTotals.formatted.totalTTC}</span>
+              </div>
+              <div class="tree-doc-card-row2">
+                <span>📅 ${invDateDisplay}</span>
+                ${invStatusBadge}
+              </div>
+            `;
+            invCardEl.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectDocument(inv.id);
+            });
+            depContainer.appendChild(invCardEl);
+          });
+
+          devisGroupEl.appendChild(depContainer);
+        }
+
+        bodyEl.appendChild(devisGroupEl);
+      });
+
+      // 2. Rendu des Factures Directes (hors devis)
+      if (standaloneDocs.length > 0) {
+        const standaloneSection = document.createElement('div');
+        standaloneSection.className = 'project-standalone-section';
+        standaloneSection.innerHTML = `
+          <div class="project-standalone-title">💶 Factures directes (${standaloneDocs.length}) :</div>
+        `;
+
+        standaloneDocs.forEach(doc => {
+          const isDocActive = activeDoc && activeDoc.id === doc.id;
+          const docTotals = Calculations.calculateDocumentTotals(doc);
+          const docDateDisplay = Nomenclature.formatDateToFR(doc.dateEmission);
+          const docStatusBadge = doc.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(doc.status);
+
+          let icon = '💶';
+          if (doc.type === 'facture_acompte') icon = '⏳';
+          else if (doc.type === 'facture_solde') icon = '⚖️';
+
+          const docCardEl = document.createElement('div');
+          docCardEl.className = `tree-doc-card ${isDocActive ? 'active' : ''} ${doc.archived ? 'is-archived' : ''}`;
+          docCardEl.innerHTML = `
+            <div class="tree-doc-card-row1">
+              <span class="tree-doc-card-num">${icon} Facture <strong>${escapeHtml(doc.numero || 'Sans numéro')}</strong></span>
+              <span class="tree-doc-card-amount">${docTotals.formatted.totalTTC}</span>
+            </div>
+            <div class="tree-doc-card-row2">
+              <span>📅 ${docDateDisplay}</span>
+              ${docStatusBadge}
+            </div>
+          `;
+          docCardEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectDocument(doc.id);
+          });
+          standaloneSection.appendChild(docCardEl);
         });
 
-        return row;
+        bodyEl.appendChild(standaloneSection);
       }
 
-      // 1. Rendu des Devis et de leurs factures liées (arborescence niveau 1 & 2)
-      devisDocs.forEach(devis => {
-        childrenContainer.appendChild(createTreeDocRow(devis, false));
-        const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
-        linkedInvs.forEach(inv => {
-          childrenContainer.appendChild(createTreeDocRow(inv, true));
-        });
+      cardContainer.appendChild(bodyEl);
+
+      // Pied de boîte : bouton pour ajouter un document dans ce projet
+      const footerEl = document.createElement('div');
+      footerEl.className = 'project-card-footer';
+      footerEl.innerHTML = `
+        <button type="button" class="btn btn-dark btn-sm" style="width: 100%; font-size: 11px; padding: 4px 8px; justify-content: center; border-color: ${pColor}50;">
+          + Nouveau document dans ce projet
+        </button>
+      `;
+      footerEl.querySelector('button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        openNewDocModal('devis');
+        const projInput = document.getElementById('newDocProjectInput');
+        const colorPicker = document.getElementById('newDocColorPicker');
+        if (projInput) {
+          projInput.value = group.name === 'SANS_PROJET' ? '' : group.name;
+          if (colorPicker) colorPicker.value = pColor;
+          projInput.dispatchEvent(new Event('input'));
+        }
       });
 
-      // 2. Rendu des factures directes ou autres documents autonomes
-      standaloneDocs.forEach(doc => {
-        childrenContainer.appendChild(createTreeDocRow(doc, false));
-      });
-
-      projectsTreeViewEl.appendChild(nodeEl);
+      cardContainer.appendChild(footerEl);
+      projectsTreeViewEl.appendChild(cardContainer);
     });
   }
 
@@ -1217,7 +1307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal(modalLinkDocument);
             renderLinkBanner();
             renderSidebar();
-            showToast(`Facture ${inv.numero} reliée au devis !`, 'success');
+            showToast(`Facture ${inv.numero} reliée au devis ${activeDoc.numero} (Projet : ${activeDoc.prefix || 'Sans projet'}) !`, 'success');
           });
 
           listEl.appendChild(row);
@@ -1238,7 +1328,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           row.innerHTML = `
             <div>
-              <div style="font-weight:700; color:#fff; font-size:13px;">Devis ${escapeHtml(dev.numero)}</div>
+              <div style="font-weight:700; color:#fff; font-size:13px;">Devis ${escapeHtml(dev.numero)} ${dev.prefix ? `<span style="font-size:10px; color:#38bdf8;">[${escapeHtml(dev.prefix)}]</span>` : ''}</div>
               <div style="color:#94a3b8; font-size:11px;">Client: ${escapeHtml(dev.client?.nom || '')} • Total: ${devTotals.formatted.totalTTC}</div>
             </div>
             <button class="btn btn-primary btn-sm btn-select-link">Choisir ce devis</button>
@@ -1248,10 +1338,12 @@ document.addEventListener('DOMContentLoaded', () => {
             Store.linkInvoiceToDevis(activeDoc.id, dev.id);
             activeDoc.linkedDevisId = dev.id;
             activeDoc.linkedDevisNumero = dev.numero;
+            activeDoc.prefix = dev.prefix || '';
+            activeDoc.prefixColor = dev.prefixColor || '#38bdf8';
             closeModal(modalLinkDocument);
-            renderLinkBanner();
+            renderActiveDocument();
             renderSidebar();
-            showToast(`Facture rattachée au devis ${dev.numero} !`, 'success');
+            showToast(`Facture rattachée au devis ${dev.numero} (Projet : ${dev.prefix || 'Sans projet'}) !`, 'success');
           });
 
           listEl.appendChild(row);

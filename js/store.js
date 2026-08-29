@@ -360,10 +360,9 @@ const Store = {
     if (devis) {
       invoice.linkedDevisId = devis.id;
       invoice.linkedDevisNumero = devis.numero;
-      if (!invoice.prefix && devis.prefix) {
-        invoice.prefix = devis.prefix;
-        invoice.prefixColor = devis.prefixColor || '#38bdf8';
-      }
+      // Règle stricte : la facture rattachée DOIT obligatoirement être dans le même projet que le devis
+      invoice.prefix = devis.prefix || '';
+      invoice.prefixColor = devis.prefixColor || '#38bdf8';
     } else {
       invoice.linkedDevisId = null;
       invoice.linkedDevisNumero = null;

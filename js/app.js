@@ -341,13 +341,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const isUnique = Store.isProjectNameUnique(val);
-      if (!isUnique) {
-        validationMsg.innerHTML = '<span style="color:#ef4444; font-weight:600;">❌ Ce projet existe déjà ! Pour y ajouter ce document, cliquez dessus dans la liste ci-dessous.</span>';
-        confirmBtn.disabled = true;
-        projectInput.style.borderColor = '#ef4444';
+      const existingProjects = Store.getDistinctProjects();
+      const existing = existingProjects.find(p => p.name.toUpperCase() === val);
+      if (existing) {
+        colorPicker.value = existing.color || '#38bdf8';
+        validationMsg.innerHTML = `<span style="color:#38bdf8; font-weight:600;">📁 Rattachement au projet existant "${escapeHtml(val)}"</span>`;
+        confirmBtn.disabled = false;
+        projectInput.style.borderColor = '#38bdf8';
+        presetsContainer.querySelectorAll('.color-preset-dot').forEach(d => {
+          if (d.dataset.color === existing.color) d.classList.add('active');
+          else d.classList.remove('active');
+        });
       } else {
-        validationMsg.innerHTML = '<span style="color:#10b981; font-weight:600;">✓ Nouveau nom de projet disponible.</span>';
+        validationMsg.innerHTML = '<span style="color:#10b981; font-weight:600;">✓ Nouveau nom de projet créé.</span>';
         confirmBtn.disabled = false;
         projectInput.style.borderColor = '#10b981';
       }
@@ -1066,29 +1072,117 @@ document.addEventListener('DOMContentLoaded', () => {
 
       cardContainer.appendChild(bodyEl);
 
-      // Pied de boîte : bouton pour ajouter un document dans ce projet
+      // Trouver le client existant dans ce projet (s'il existe déjà)
+      const existingClientObj = group.docs.find(d => d.client && d.client.nom)?.client || null;
+
+      // Pied de boîte : boutons directs pour ajouter un Devis ou une Facture dans ce projet
       const footerEl = document.createElement('div');
       footerEl.className = 'project-card-footer';
+      footerEl.style.display = 'flex';
+      footerEl.style.gap = '6px';
       footerEl.innerHTML = `
-        <button type="button" class="btn btn-dark btn-sm" style="width: 100%; font-size: 11px; padding: 4px 8px; justify-content: center; border-color: ${pColor}50;">
-          + Nouveau document dans ce projet
+        <button type="button" class="btn btn-dark btn-sm btn-create-devis" style="flex: 1; font-size: 11px; padding: 4px 6px; justify-content: center; border-color: ${pColor}50;" title="Créer directement un nouveau devis dans ce projet">
+          + Devis
+        </button>
+        <button type="button" class="btn btn-dark btn-sm btn-create-facture" style="flex: 1; font-size: 11px; padding: 4px 6px; justify-content: center; border-color: ${pColor}50;" title="Créer directement une nouvelle facture dans ce projet">
+          + Facture
         </button>
       `;
-      footerEl.querySelector('button').addEventListener('click', (e) => {
+
+      footerEl.querySelector('.btn-create-devis').addEventListener('click', (e) => {
         e.stopPropagation();
-        openNewDocModal('devis');
-        const projInput = document.getElementById('newDocProjectInput');
-        const colorPicker = document.getElementById('newDocColorPicker');
-        if (projInput) {
-          projInput.value = group.name === 'SANS_PROJET' ? '' : group.name;
-          if (colorPicker) colorPicker.value = pColor;
-          projInput.dispatchEvent(new Event('input'));
-        }
+        createDocumentDirectlyInProject(group.name, pColor, 'devis', existingClientObj);
+      });
+
+      footerEl.querySelector('.btn-create-facture').addEventListener('click', (e) => {
+        e.stopPropagation();
+        createDocumentDirectlyInProject(group.name, pColor, 'facture', existingClientObj);
       });
 
       cardContainer.appendChild(footerEl);
       projectsTreeViewEl.appendChild(cardContainer);
     });
+  }
+
+  /**
+   * Crée directement un nouveau document dans un projet existant sans popup
+   */
+  function createDocumentDirectlyInProject(projectName, projectColor, type = 'devis', clientData = null) {
+    const profile = Store.getProfile();
+    const existingDocs = Store.getAllDocs();
+    const todayISO = Nomenclature.getTodayISO();
+    const docNumber = Nomenclature.generateDocNumber(type, todayISO, existingDocs);
+    const defaultTemplate = Templates.getBuiltinTemplates().find(t => t.type === type) || Templates.getBuiltinTemplates()[0];
+
+    const cleanProjectName = projectName === 'SANS_PROJET' ? '' : projectName;
+
+    const newDoc = {
+      id: 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isTemplate: false,
+      status: 'brouillon',
+      type: type,
+      prefix: cleanProjectName,
+      prefixColor: projectColor || '#38bdf8',
+      archived: false,
+      linkedDevisId: null,
+      linkedDevisNumero: null,
+      titreDoc: defaultTemplate.titreDoc || (Nomenclature.DOC_TYPES[type]?.title || (type === 'facture' ? 'Facture' : 'Devis')),
+      labelNumero: defaultTemplate.labelNumero || (type === 'facture' ? 'Numéro de facture' : 'Numéro de devis'),
+      numero: docNumber,
+      labelDate: 'Date d\'émission',
+      dateEmission: todayISO,
+
+      emetteur: {
+        nom: profile.nom || '',
+        statut: profile.statut || '',
+        adresse: profile.adresse || '',
+        siret: profile.siret || '',
+        rcs: profile.rcs || '',
+        email: profile.email || '',
+        telephone: profile.telephone || '',
+        logoUrl: profile.logoUrl || ''
+      },
+
+      client: clientData ? JSON.parse(JSON.stringify(clientData)) : {
+        nom: '',
+        adresse: '',
+        siret: '',
+        email: '',
+        telephone: ''
+      },
+
+      items: defaultTemplate.items && defaultTemplate.items.length > 0 
+        ? JSON.parse(JSON.stringify(defaultTemplate.items))
+        : [{ id: 'item_1', description: 'Prestation standard', qte: '1', prixUnitaire: 0, tva: 0 }],
+
+      showAcompteSolde: type === 'devis',
+      acomptePercent: 40,
+      labelAcompte: 'Acompte à la commande',
+      labelSolde: 'Solde à la livraison',
+
+      showBanque: true,
+      banque: { ...profile.banque },
+
+      clauses: defaultTemplate.clauses && defaultTemplate.clauses.length > 0
+        ? [...defaultTemplate.clauses]
+        : (type === 'facture' ? [
+          'TVA non applicable, article 293 B du Code Général des Impôts.',
+          'Conditions de paiement : Paiement à réception de facture.'
+        ] : [
+          'TVA non applicable, article 293 B du Code Général des Impôts.',
+          'Validité du devis : 30 jours à compter de la date d\'émission.'
+        ]),
+      showSignature: type === 'devis',
+      signatureText: 'Bon pour accord\nDate et signature précédées de la mention manuscrite :',
+      basDePage: profile.mentionBasDePage || ''
+    };
+
+    Store.saveDoc(newDoc);
+    selectDocument(newDoc.id);
+    renderSidebar();
+    showToast(`Nouveau ${type === 'devis' ? 'devis' : 'document'} ajouté au projet ${cleanProjectName || 'Sans projet'} !`, 'success');
   }
 
   /**

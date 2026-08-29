@@ -956,20 +956,20 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="project-totals-badges">
             ${factureCount > 0 ? `
-              <div class="project-total-chip chip-facture" title="Total cumulé des factures émises (Acomptes + Soldes + Factures directes)">
-                <span class="chip-label">Facturé</span>
-                <span class="chip-amount" style="color: ${pColor};">${Calculations.formatEuro(facturesTotal)}</span>
+              <div class="project-total-row row-facture" title="Total cumulé des factures émises (Acomptes + Soldes + Factures directes)">
+                <span class="total-label">Facturé</span>
+                <span class="total-val" style="color: ${pColor};">${Calculations.formatEuro(facturesTotal)}</span>
               </div>
             ` : ''}
             ${devisCount > 0 ? `
-              <div class="project-total-chip chip-devis" title="Total cumulé des devis émis">
-                <span class="chip-label">Devis</span>
-                <span class="chip-amount">${Calculations.formatEuro(devisTotal)}</span>
+              <div class="project-total-row row-devis" title="Total cumulé des devis émis">
+                <span class="total-label">Devis</span>
+                <span class="total-val">${Calculations.formatEuro(devisTotal)}</span>
               </div>
             ` : ''}
             ${factureCount === 0 && devisCount === 0 ? `
-              <div class="project-total-chip chip-devis">
-                <span class="chip-amount">0,00 €</span>
+              <div class="project-total-row row-facture">
+                <span class="total-val" style="color: ${pColor};">0,00 €</span>
               </div>
             ` : ''}
           </div>

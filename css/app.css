@@ -979,45 +979,43 @@ body {
 
 .project-totals-badges {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
   flex-shrink: 0;
 }
 
-.project-total-chip {
+.project-total-row {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10.5px;
-  line-height: 1.2;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
-.project-total-chip .chip-label {
-  font-size: 9px;
+.project-total-row .total-label {
+  font-size: 8.5px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
   letter-spacing: 0.2px;
 }
 
-.project-total-chip .chip-amount {
+.project-total-row .total-val {
   font-size: 11.5px;
   font-weight: 700;
   color: #f8fafc;
 }
 
-.project-total-chip.chip-facture {
-  border-color: rgba(56, 189, 248, 0.3);
-  background: rgba(56, 189, 248, 0.08);
+.project-total-row.row-facture .total-val {
+  font-size: 12px;
+  font-weight: 800;
 }
 
-.project-total-chip.chip-devis {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+.project-total-row.row-devis .total-val {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
 }
 
 .project-card-header-bottom {

@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="css/document.css?v=2.4">
-  <link rel="stylesheet" href="css/app.css?v=2.4">
+  <link rel="stylesheet" href="css/document.css?v=2.5">
+  <link rel="stylesheet" href="css/app.css?v=2.5">
   
   <script>
     (function() {
@@ -103,66 +103,90 @@
           </div>
         </div>
 
-        <!-- Champ de recherche -->
-        <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" class="search-input" id="searchInput" placeholder="Rechercher par projet, n°, client..." />
+        <!-- Sélecteur de Vue : Liste vs Par Projets + Toggle Filtres -->
+        <div class="sidebar-view-mode-bar">
+          <div class="view-mode-pills">
+            <button class="view-mode-tab active" id="tabViewList" data-view="list" title="Vue Liste Complète">
+              <span>📋 Tous</span>
+            </button>
+            <button class="view-mode-tab" id="tabViewTree" data-view="tree" title="Vue Arborescence par Projets">
+              <span>📁 Par Projets</span>
+            </button>
+          </div>
+          <button class="btn-toggle-filters" id="btnToggleSearchFilters" title="Masquer / Afficher la recherche et les filtres">
+            <span id="filterToggleIcon">🔍</span>
+            <span class="filter-badge-dot" id="filterActiveDot" style="display: none;"></span>
+          </button>
         </div>
 
-        <!-- Filtres par onglets -->
-        <div class="filter-tabs">
-          <button class="tab-btn active" data-filter="all">Tous</button>
-          <button class="tab-btn" data-filter="devis">Devis</button>
-          <button class="tab-btn" data-filter="facture">Factures</button>
-        </div>
-
-        <!-- Filtres Avancés : Statut, Projet, Client, Date & Archives -->
-        <div class="sidebar-filters-bar">
-          <div class="filter-row">
-            <select class="sidebar-filter-select" id="filterStatusSelect" title="Filtrer par statut">
-              <option value="all">Statut : Tous</option>
-              <option value="brouillon">🟡 Brouillon</option>
-              <option value="envoye">🔵 Envoyé</option>
-              <option value="accepte">🟢 Validé</option>
-              <option value="paye">🟣 Payé</option>
-              <option value="annule">🔴 Annulé</option>
-            </select>
-
-            <select class="sidebar-filter-select" id="filterProjectSelect" title="Filtrer par projet">
-              <option value="all">Projet : Tous</option>
-              <!-- Rempli dynamiquement -->
-            </select>
+        <!-- Section Masquable / Déroulante : Recherche et Filtres -->
+        <div class="sidebar-search-filters-collapse" id="searchFiltersCollapse">
+          <!-- Champ de recherche -->
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="Rechercher par projet, n°, client..." />
           </div>
 
-          <div class="filter-row" style="margin-top: 4px;">
-            <select class="sidebar-filter-select" id="filterClientSelect" style="flex: 1;" title="Filtrer par client">
-              <option value="all">Client : Tous</option>
-              <!-- Rempli dynamiquement -->
-            </select>
-
-            <select class="sidebar-filter-select" id="filterDateSelect" style="width: 110px;" title="Filtrer par période / tri">
-              <option value="recent">Tri : Récents</option>
-              <option value="oldest">Tri : Anciens</option>
-              <option value="this_month">Ce mois-ci</option>
-              <option value="this_year">Cette année</option>
-            </select>
+          <!-- Filtres par onglets -->
+          <div class="filter-tabs">
+            <button class="tab-btn active" data-filter="all">Tous</button>
+            <button class="tab-btn" data-filter="devis">Devis</button>
+            <button class="tab-btn" data-filter="facture">Factures</button>
           </div>
 
-          <div class="filter-row" style="margin-top: 4px; justify-content: space-between;">
-            <button class="btn btn-dark btn-sm toggle-archive-btn" id="btnToggleArchived" title="Afficher ou masquer les documents archivés">
-              <span id="toggleArchivedText">📦 Archivés (0)</span>
-            </button>
+          <!-- Filtres Avancés : Statut, Projet, Client, Date & Archives -->
+          <div class="sidebar-filters-bar">
+            <div class="filter-row">
+              <select class="sidebar-filter-select" id="filterStatusSelect" title="Filtrer par statut">
+                <option value="all">Statut : Tous</option>
+                <option value="brouillon">🟡 Brouillon</option>
+                <option value="envoye">🔵 Envoyé</option>
+                <option value="accepte">🟢 Validé</option>
+                <option value="paye">🟣 Payé</option>
+                <option value="annule">🔴 Annulé</option>
+              </select>
 
-            <button class="btn btn-dark btn-sm" id="btnResetFilters" title="Réinitialiser tous les filtres" style="padding: 2px 8px; font-size: 11px;">
-              ↺ Reset
-            </button>
+              <select class="sidebar-filter-select" id="filterProjectSelect" title="Filtrer par projet">
+                <option value="all">Projet : Tous</option>
+                <!-- Rempli dynamiquement -->
+              </select>
+            </div>
+
+            <div class="filter-row" style="margin-top: 4px;">
+              <select class="sidebar-filter-select" id="filterClientSelect" style="flex: 1;" title="Filtrer par client">
+                <option value="all">Client : Tous</option>
+                <!-- Rempli dynamiquement -->
+              </select>
+
+              <select class="sidebar-filter-select" id="filterDateSelect" style="width: 110px;" title="Filtrer par période / tri">
+                <option value="recent">Tri : Récents</option>
+                <option value="oldest">Tri : Anciens</option>
+                <option value="this_month">Ce mois-ci</option>
+                <option value="this_year">Cette année</option>
+              </select>
+            </div>
+
+            <div class="filter-row" style="margin-top: 4px; justify-content: space-between;">
+              <button class="btn btn-dark btn-sm toggle-archive-btn" id="btnToggleArchived" title="Afficher ou masquer les documents archivés">
+                <span id="toggleArchivedText">📦 Archivés (0)</span>
+              </button>
+
+              <button class="btn btn-dark btn-sm" id="btnResetFilters" title="Réinitialiser tous les filtres" style="padding: 2px 8px; font-size: 11px;">
+                ↺ Reset
+              </button>
+            </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Liste des documents -->
+      <!-- Conteneur Vue 1 : Liste classique des documents -->
       <div class="docs-list" id="docsList">
+        <!-- Rempli dynamiquement via JS -->
+      </div>
+
+      <!-- Conteneur Vue 2 : Arborescence par projets -->
+      <div class="projects-tree-view" id="projectsTreeView" style="display: none;">
         <!-- Rempli dynamiquement via JS -->
       </div>
 
@@ -697,12 +721,12 @@
   <script src="js/vendor/jspdf.umd.min.js"></script>
   <script src="js/vendor/jspdf.plugin.autotable.min.js"></script>
   <script src="js/vendor/html2pdf.bundle.min.js"></script>
-  <script src="js/nomenclature.js?v=2.4"></script>
-  <script src="js/calculations.js?v=2.4"></script>
-  <script src="js/templates.js?v=2.4"></script>
-  <script src="js/store.js?v=2.4"></script>
-  <script src="js/pdf_exporter.js?v=2.4"></script>
-  <script src="js/app.js?v=2.4"></script>
+  <script src="js/nomenclature.js?v=2.5"></script>
+  <script src="js/calculations.js?v=2.5"></script>
+  <script src="js/templates.js?v=2.5"></script>
+  <script src="js/store.js?v=2.5"></script>
+  <script src="js/pdf_exporter.js?v=2.5"></script>
+  <script src="js/app.js?v=2.5"></script>
 
 </body>
 </html>

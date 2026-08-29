@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   Store.init();
 
   let activeDoc = null;
+  let activeViewMode = localStorage.getItem('manticore_sidebar_view_mode') || 'list'; // 'list' ou 'tree'
+  let isFiltersCollapsed = localStorage.getItem('manticore_hide_filters') === 'true';
+  const expandedProjects = new Set();
   let activeFilter = 'all'; // 'all', 'devis', 'facture'
   let filterStatus = 'all'; // 'all', 'brouillon', 'envoye', 'accepte', 'paye', 'annule'
   let filterProject = 'all'; // 'all' ou nom du projet
@@ -31,6 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const appSidebar = document.getElementById('appSidebar');
   const sidebarResizer = document.getElementById('sidebarResizer');
   const docsListEl = document.getElementById('docsList');
+  const projectsTreeViewEl = document.getElementById('projectsTreeView');
+  const tabViewList = document.getElementById('tabViewList');
+  const tabViewTree = document.getElementById('tabViewTree');
+  const btnToggleSearchFilters = document.getElementById('btnToggleSearchFilters');
+  const searchFiltersCollapse = document.getElementById('searchFiltersCollapse');
+  const filterActiveDot = document.getElementById('filterActiveDot');
   const a4PageContainer = document.getElementById('a4PageContainer');
   const docLinkBannerContainer = document.getElementById('docLinkBannerContainer');
   const searchInput = document.getElementById('searchInput');
@@ -236,6 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sur tablette/mobile, fermer le tiroir automatiquement
     if (window.innerWidth <= 992) {
       closeMobileSidebar();
+    }
+
+    if (doc && doc.prefix) {
+      expandedProjects.add(doc.prefix.trim().toUpperCase().replace(/\s+/g, '_'));
     }
 
     const currentDocEl = document.getElementById('printableA4Document');
@@ -606,13 +619,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Rendu de la barre latérale des documents avec filtres avancés et archives
+   * Met à jour l'état visuel du sélecteur de vue (Liste / Projets)
+   */
+  function updateViewModeUI() {
+    if (activeViewMode === 'tree') {
+      tabViewTree?.classList.add('active');
+      tabViewList?.classList.remove('active');
+      if (docsListEl) docsListEl.style.display = 'none';
+      if (projectsTreeViewEl) projectsTreeViewEl.style.display = 'flex';
+    } else {
+      tabViewList?.classList.add('active');
+      tabViewTree?.classList.remove('active');
+      if (docsListEl) docsListEl.style.display = 'flex';
+      if (projectsTreeViewEl) projectsTreeViewEl.style.display = 'none';
+    }
+  }
+
+  /**
+   * Met à jour l'état replié/déplié de la section de recherche et filtres
+   */
+  function updateFiltersCollapseUI() {
+    if (isFiltersCollapsed) {
+      searchFiltersCollapse?.classList.add('collapsed');
+      btnToggleSearchFilters?.classList.remove('active');
+      btnToggleSearchFilters?.setAttribute('title', 'Afficher la recherche et les filtres');
+    } else {
+      searchFiltersCollapse?.classList.remove('collapsed');
+      btnToggleSearchFilters?.classList.add('active');
+      btnToggleSearchFilters?.setAttribute('title', 'Masquer la recherche et les filtres');
+    }
+  }
+
+  /**
+   * Rendu de la barre latérale des documents avec filtres avancés, mode arborescent ou liste
    */
   function renderSidebar() {
     const allDocs = Store.getAllDocs();
     updateProjectFilterOptions();
     updateClientFilterOptions();
-    docsListEl.innerHTML = '';
+    updateViewModeUI();
+    updateFiltersCollapseUI();
 
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -624,6 +670,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (btnToggleArchived) {
       btnToggleArchived.className = `btn btn-dark btn-sm toggle-archive-btn ${showArchived ? 'active' : ''}`;
+    }
+
+    // Pastille d'indication si des filtres sont actifs alors que la section filtres est masquée
+    const isFiltered = (activeFilter !== 'all' || filterStatus !== 'all' || filterProject !== 'all' || filterClient !== 'all' || filterDate !== 'recent' || !!searchQuery || showArchived);
+    if (filterActiveDot) {
+      filterActiveDot.style.display = isFiltered ? 'block' : 'none';
     }
 
     let filtered = allDocs.filter(doc => {
@@ -692,6 +744,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return dateB - dateA; // Récents d'abord par défaut
     });
 
+    if (activeViewMode === 'tree') {
+      renderProjectsTree(filtered, showArchived);
+      return;
+    }
+
+    // ==========================================
+    // RENDU VUE 1 : LISTE CLASSIQUE
+    // ==========================================
+    docsListEl.innerHTML = '';
     if (filtered.length === 0) {
       docsListEl.innerHTML = `
         <div style="text-align: center; color: #64748b; padding: 30px 10px; font-size: 13px;">
@@ -760,6 +821,183 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       docsListEl.appendChild(card);
+    });
+  }
+
+  /**
+   * Rendu de la vue arborescente par projets (Projets -> Devis -> Factures d'acompte/solde rattachées)
+   */
+  function renderProjectsTree(filteredDocs, isArchivedView) {
+    if (!projectsTreeViewEl) return;
+    projectsTreeViewEl.innerHTML = '';
+
+    if (filteredDocs.length === 0) {
+      projectsTreeViewEl.innerHTML = `
+        <div style="text-align: center; color: #64748b; padding: 30px 10px; font-size: 13px;">
+          ${isArchivedView ? 'Aucun document archivé trouvé' : 'Aucun document ne correspond aux filtres'}
+        </div>
+      `;
+      return;
+    }
+
+    // Grouper les documents par projet
+    const projectGroups = new Map();
+    filteredDocs.forEach(doc => {
+      const pName = (doc.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') || '__NO_PROJECT__';
+      if (!projectGroups.has(pName)) {
+        projectGroups.set(pName, {
+          name: pName,
+          displayName: pName === '__NO_PROJECT__' ? 'SANS PROJET' : pName,
+          color: doc.prefixColor || '#38bdf8',
+          client: doc.client?.nom || '',
+          docs: []
+        });
+      }
+      const grp = projectGroups.get(pName);
+      if (!grp.client && doc.client?.nom) grp.client = doc.client.nom;
+      grp.docs.push(doc);
+    });
+
+    // Par défaut, si aucun projet n'a encore été ouvert, ouvrir tous les projets
+    if (expandedProjects.size === 0) {
+      projectGroups.forEach((_, key) => expandedProjects.add(key));
+    }
+    // S'assurer que le projet du document actif est bien déplié
+    if (activeDoc && activeDoc.prefix) {
+      expandedProjects.add(activeDoc.prefix.trim().toUpperCase().replace(/\s+/g, '_'));
+    }
+
+    // Barre d'outils de l'arborescence (Compteurs & Déplier/Replier tout)
+    const toolbar = document.createElement('div');
+    toolbar.className = 'tree-toolbar';
+    toolbar.innerHTML = `
+      <span><strong>${projectGroups.size}</strong> projet${projectGroups.size > 1 ? 's' : ''} • <strong>${filteredDocs.length}</strong> doc${filteredDocs.length > 1 ? 's' : ''}</span>
+      <div class="tree-toolbar-actions">
+        <button type="button" class="tree-tool-btn" id="btnTreeExpandAll" title="Tout déplier">⤢ Déplier</button>
+        <button type="button" class="tree-tool-btn" id="btnTreeCollapseAll" title="Tout replier">⤡ Replier</button>
+      </div>
+    `;
+
+    toolbar.querySelector('#btnTreeExpandAll').addEventListener('click', (e) => {
+      e.stopPropagation();
+      projectGroups.forEach((_, key) => expandedProjects.add(key));
+      renderProjectsTree(filteredDocs, isArchivedView);
+    });
+
+    toolbar.querySelector('#btnTreeCollapseAll').addEventListener('click', (e) => {
+      e.stopPropagation();
+      expandedProjects.clear();
+      renderProjectsTree(filteredDocs, isArchivedView);
+    });
+
+    projectsTreeViewEl.appendChild(toolbar);
+
+    // Rendu de chaque dossier de projet
+    projectGroups.forEach(group => {
+      const isExpanded = expandedProjects.has(group.name);
+      const containsActive = activeDoc && group.docs.some(d => d.id === activeDoc.id);
+
+      // Calcul du montant total du projet
+      let projectTotal = 0;
+      group.docs.forEach(d => {
+        const t = Calculations.calculateDocumentTotals(d);
+        projectTotal += (t.totalTTC || 0);
+      });
+
+      const nodeEl = document.createElement('div');
+      nodeEl.className = `project-tree-node ${isExpanded ? 'expanded' : ''} ${containsActive ? 'has-active' : ''}`;
+
+      const pColor = group.color || '#38bdf8';
+      const badgeStyle = `background-color: #0f172a !important; color: ${pColor} !important; border: 1px solid ${pColor}80 !important;`;
+
+      nodeEl.innerHTML = `
+        <div class="project-tree-header">
+          <div class="project-header-left">
+            <span class="project-chevron">▶</span>
+            <span style="color: ${pColor}; font-size: 13px;">📁</span>
+            <span class="project-tree-badge" style="${badgeStyle}">${escapeHtml(group.displayName)}</span>
+            ${group.client ? `<span class="project-client-label">• ${escapeHtml(group.client)}</span>` : ''}
+          </div>
+          <div class="project-header-right">
+            <span class="project-count-pill">${group.docs.length}</span>
+            <span class="project-total-text">${Calculations.formatEuro(projectTotal)}</span>
+          </div>
+        </div>
+        <div class="project-tree-children"></div>
+      `;
+
+      // Clic sur l'en-tête du projet pour déplier / replier
+      nodeEl.querySelector('.project-tree-header').addEventListener('click', () => {
+        if (expandedProjects.has(group.name)) {
+          expandedProjects.delete(group.name);
+        } else {
+          expandedProjects.add(group.name);
+        }
+        renderProjectsTree(filteredDocs, isArchivedView);
+      });
+
+      const childrenContainer = nodeEl.querySelector('.project-tree-children');
+
+      // Organiser les documents : devis avec leurs factures liées en sous-arbre, puis factures autonomes
+      const devisDocs = group.docs.filter(d => d.type.startsWith('devis'));
+      const linkedInvoiceIds = new Set();
+
+      // Trouver toutes les factures rattachées à ces devis
+      devisDocs.forEach(devis => {
+        const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
+        linkedInvs.forEach(inv => linkedInvoiceIds.add(inv.id));
+      });
+
+      const standaloneDocs = group.docs.filter(d => !d.type.startsWith('devis') && !linkedInvoiceIds.has(d.id));
+
+      // Fonction helper pour créer une ligne de document dans l'arbre
+      function createTreeDocRow(doc, isChild = false) {
+        const row = document.createElement('div');
+        const isActive = activeDoc && activeDoc.id === doc.id;
+        row.className = `tree-doc-item ${isActive ? 'active' : ''} ${doc.archived ? 'is-archived' : ''} ${isChild ? 'is-linked-child' : ''}`;
+        
+        const totals = Calculations.calculateDocumentTotals(doc);
+        const statusBadge = doc.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(doc.status);
+
+        let icon = '📄';
+        if (doc.type === 'facture_acompte') icon = '⏳';
+        else if (doc.type === 'facture_solde') icon = '⚖️';
+        else if (doc.type === 'facture') icon = '💶';
+
+        row.innerHTML = `
+          <div class="tree-doc-left">
+            <span class="tree-doc-icon">${icon}</span>
+            <span class="tree-doc-num" title="${escapeHtml(doc.numero || '')}">${escapeHtml(doc.numero || 'Sans numéro')}</span>
+          </div>
+          <div class="tree-doc-right">
+            ${statusBadge}
+            <span class="tree-doc-total">${totals.formatted.totalTTC}</span>
+          </div>
+        `;
+
+        row.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectDocument(doc.id);
+        });
+
+        return row;
+      }
+
+      // 1. Rendu des Devis et de leurs factures liées (arborescence niveau 1 & 2)
+      devisDocs.forEach(devis => {
+        childrenContainer.appendChild(createTreeDocRow(devis, false));
+        const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
+        linkedInvs.forEach(inv => {
+          childrenContainer.appendChild(createTreeDocRow(inv, true));
+        });
+      });
+
+      // 2. Rendu des factures directes ou autres documents autonomes
+      standaloneDocs.forEach(doc => {
+        childrenContainer.appendChild(createTreeDocRow(doc, false));
+      });
+
+      projectsTreeViewEl.appendChild(nodeEl);
     });
   }
 
@@ -1862,6 +2100,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('menuCreateFactureSolde')?.addEventListener('click', () => openNewDocModal('facture_solde'));
     document.getElementById('menuOpenTemplates')?.addEventListener('click', openTemplatesModal);
   }
+
+  // --- SÉLECTEUR DE VUE (LISTE vs ARBORESCENCE PAR PROJET) ---
+  tabViewList?.addEventListener('click', () => {
+    activeViewMode = 'list';
+    localStorage.setItem('manticore_sidebar_view_mode', 'list');
+    renderSidebar();
+  });
+
+  tabViewTree?.addEventListener('click', () => {
+    activeViewMode = 'tree';
+    localStorage.setItem('manticore_sidebar_view_mode', 'tree');
+    renderSidebar();
+  });
+
+  // Toggle affichage / masquage de la zone recherche et filtres
+  btnToggleSearchFilters?.addEventListener('click', () => {
+    isFiltersCollapsed = !isFiltersCollapsed;
+    localStorage.setItem('manticore_hide_filters', isFiltersCollapsed ? 'true' : 'false');
+    updateFiltersCollapseUI();
+  });
 
   // --- FILTRES & RECHERCHE ---
   if (searchInput) {

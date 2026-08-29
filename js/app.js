@@ -895,16 +895,33 @@ document.addEventListener('DOMContentLoaded', () => {
     projectGroups.forEach(group => {
       const containsActive = activeDoc && group.docs.some(d => d.id === activeDoc.id);
 
-      // Calcul du montant total du projet
+      // Organiser les documents : devis avec leurs factures liées en sous-arbre, puis factures autonomes
+      const devisDocs = group.docs.filter(d => (d.type || '').startsWith('devis'));
+      const linkedInvoiceIds = new Set();
+
+      // Trouver toutes les factures rattachées à ces devis
+      devisDocs.forEach(devis => {
+        const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
+        linkedInvs.forEach(inv => linkedInvoiceIds.add(inv.id));
+      });
+
+      const standaloneDocs = group.docs.filter(d => !(d.type || '').startsWith('devis') && !linkedInvoiceIds.has(d.id));
+
+      // Calcul comptable exact du montant total du projet :
+      // Les factures liées (acompte, solde) font partie de l'échéancier du devis parent.
+      // Total du projet = Somme des Devis + Somme des Factures directes autonomes (évite le double comptage).
       let projectTotal = 0;
-      let devisCount = 0;
-      let factureCount = 0;
-      group.docs.forEach(d => {
+      devisDocs.forEach(d => {
         const t = Calculations.calculateDocumentTotals(d);
         projectTotal += (t.totalTTC || 0);
-        if ((d.type || '').startsWith('devis')) devisCount++;
-        else factureCount++;
       });
+      standaloneDocs.forEach(d => {
+        const t = Calculations.calculateDocumentTotals(d);
+        projectTotal += (t.totalTTC || 0);
+      });
+
+      const devisCount = devisDocs.length;
+      const factureCount = group.docs.length - devisCount;
 
       // Gestion de l'affichage de multiples clients
       const distinctClients = Array.from(group.clientsSet);
@@ -953,18 +970,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Corps du projet
       const bodyEl = document.createElement('div');
       bodyEl.className = 'project-card-body';
-
-      // Organiser les documents : devis avec leurs factures liées en sous-arbre, puis factures autonomes
-      const devisDocs = group.docs.filter(d => (d.type || '').startsWith('devis'));
-      const linkedInvoiceIds = new Set();
-
-      // Trouver toutes les factures rattachées à ces devis
-      devisDocs.forEach(devis => {
-        const linkedInvs = group.docs.filter(d => d.linkedDevisId === devis.id);
-        linkedInvs.forEach(inv => linkedInvoiceIds.add(inv.id));
-      });
-
-      const standaloneDocs = group.docs.filter(d => !(d.type || '').startsWith('devis') && !linkedInvoiceIds.has(d.id));
 
       // 1. Rendu des Groupes Devis + Dépendances
       devisDocs.forEach(devis => {

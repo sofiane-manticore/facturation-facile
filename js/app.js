@@ -847,21 +847,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Grouper les documents par projet
+    // Grouper les documents par projet
     const projectGroups = new Map();
     filteredDocs.forEach(doc => {
-      const pName = (doc.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') || 'SANS_PROJET';
+      // Utiliser les données de activeDoc si c'est le document actif en cours d'édition pour une réactivité immédiate
+      const actualDoc = (activeDoc && activeDoc.id === doc.id) ? activeDoc : doc;
+      const pName = (actualDoc.prefix || '').trim().toUpperCase().replace(/\s+/g, '_') || 'SANS_PROJET';
       if (!projectGroups.has(pName)) {
         projectGroups.set(pName, {
           name: pName,
           displayName: pName === 'SANS_PROJET' ? 'SANS PROJET' : pName,
-          color: doc.prefixColor || '#38bdf8',
-          client: doc.client?.nom || '',
+          color: actualDoc.prefixColor || '#38bdf8',
+          clientsSet: new Set(),
           docs: []
         });
       }
       const grp = projectGroups.get(pName);
-      if (!grp.client && doc.client?.nom) grp.client = doc.client.nom;
-      grp.docs.push(doc);
+      const cNom = (actualDoc.client?.nom || '').trim();
+      if (cNom) grp.clientsSet.add(cNom);
+      grp.docs.push(actualDoc);
     });
 
     // Barre d'outils de l'arborescence (Compteurs & Déplier/Replier tout)
@@ -902,6 +906,21 @@ document.addEventListener('DOMContentLoaded', () => {
         else factureCount++;
       });
 
+      // Gestion de l'affichage de multiples clients
+      const distinctClients = Array.from(group.clientsSet);
+      let clientDisplay = 'Client standard';
+      let clientFullTitle = '';
+      if (distinctClients.length === 1) {
+        clientDisplay = distinctClients[0];
+        clientFullTitle = distinctClients[0];
+      } else if (distinctClients.length === 2) {
+        clientDisplay = distinctClients.join(' • ');
+        clientFullTitle = distinctClients.join(', ');
+      } else if (distinctClients.length > 2) {
+        clientDisplay = `${distinctClients.slice(0, 2).join(' • ')} +${distinctClients.length - 2}`;
+        clientFullTitle = distinctClients.join(', ');
+      }
+
       const pColor = group.color || '#38bdf8';
       const cardContainer = document.createElement('div');
       cardContainer.className = `project-card-container ${containsActive ? 'has-active' : ''}`;
@@ -919,7 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="project-total-badge" style="color: ${pColor};">${Calculations.formatEuro(projectTotal)}</span>
         </div>
         <div class="project-card-header-bottom">
-          <span class="project-client-name">🏢 ${escapeHtml(group.client || 'Client standard')}</span>
+          <span class="project-client-name" title="${escapeHtml(clientFullTitle || clientDisplay)}">🏢 ${escapeHtml(clientDisplay)}</span>
           <span class="project-doc-count-chip">${devisCount > 0 ? `${devisCount} devis` : ''}${devisCount > 0 && factureCount > 0 ? ' • ' : ''}${factureCount > 0 ? `${factureCount} fact.` : ''}</span>
         </div>
       `;
@@ -956,6 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const devisTotals = Calculations.calculateDocumentTotals(devis);
         const devisDateDisplay = Nomenclature.formatDateToFR(devis.dateEmission);
         const devisStatusBadge = devis.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(devis.status);
+        const devisClient = (devis.client?.nom || '').trim();
 
         // Carte du devis
         const devisCardEl = document.createElement('div');
@@ -966,7 +986,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="tree-doc-card-amount">${devisTotals.formatted.totalTTC}</span>
           </div>
           <div class="tree-doc-card-row2">
-            <span>📅 ${devisDateDisplay}</span>
+            <div class="tree-doc-meta-left">
+              ${devisClient ? `<span class="tree-doc-client-tag" title="Client : ${escapeHtml(devisClient)}">🏢 ${escapeHtml(devisClient)}</span>` : ''}
+              <span>📅 ${devisDateDisplay}</span>
+            </div>
             ${devisStatusBadge}
           </div>
         `;
@@ -993,6 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const invTotals = Calculations.calculateDocumentTotals(inv);
             const invDateDisplay = Nomenclature.formatDateToFR(inv.dateEmission);
             const invStatusBadge = inv.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(inv.status);
+            const invClient = (inv.client?.nom || '').trim();
             
             let invIcon = '⏳';
             let invLabel = 'Acompte';
@@ -1012,7 +1036,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="tree-doc-card-amount" style="font-size: 11.5px;">${invTotals.formatted.totalTTC}</span>
               </div>
               <div class="tree-doc-card-row2">
-                <span>📅 ${invDateDisplay}</span>
+                <div class="tree-doc-meta-left">
+                  ${invClient ? `<span class="tree-doc-client-tag" title="Client : ${escapeHtml(invClient)}">🏢 ${escapeHtml(invClient)}</span>` : ''}
+                  <span>📅 ${invDateDisplay}</span>
+                </div>
                 ${invStatusBadge}
               </div>
             `;
@@ -1042,6 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const docTotals = Calculations.calculateDocumentTotals(doc);
           const docDateDisplay = Nomenclature.formatDateToFR(doc.dateEmission);
           const docStatusBadge = doc.archived ? '<span class="status-pill status-pill-archived">📦</span>' : getStatusBadgeHtml(doc.status);
+          const docClient = (doc.client?.nom || '').trim();
 
           let icon = '💶';
           if (doc.type === 'facture_acompte') icon = '⏳';
@@ -1055,7 +1083,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="tree-doc-card-amount">${docTotals.formatted.totalTTC}</span>
             </div>
             <div class="tree-doc-card-row2">
-              <span>📅 ${docDateDisplay}</span>
+              <div class="tree-doc-meta-left">
+                ${docClient ? `<span class="tree-doc-client-tag" title="Client : ${escapeHtml(docClient)}">🏢 ${escapeHtml(docClient)}</span>` : ''}
+                <span>📅 ${docDateDisplay}</span>
+              </div>
               ${docStatusBadge}
             </div>
           `;
@@ -1811,7 +1842,10 @@ document.addEventListener('DOMContentLoaded', () => {
     bindInput('emetteurEmail', (val) => activeDoc.emetteur.email = val);
 
     // Client
-    bindInput('clientNom', (val) => activeDoc.client.nom = val);
+    bindInput('clientNom', (val) => {
+      activeDoc.client.nom = val;
+      renderSidebar();
+    });
     bindInput('clientLigne1', (val) => activeDoc.client.adresse1 = val);
     bindInput('clientLigne2', (val) => activeDoc.client.adresse2 = val);
     bindInput('clientEmail', (val) => activeDoc.client.email = val);
@@ -2525,6 +2559,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeDoc.client.email = c.email || '';
             Store.saveDoc(activeDoc);
             renderActiveDocument();
+            renderSidebar();
             closeModal(modalClients);
             showToast(`Client "${c.nom}" appliqué`, 'success');
           }

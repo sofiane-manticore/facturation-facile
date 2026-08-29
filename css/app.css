@@ -827,10 +827,10 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 10px 24px max(10px, env(safe-area-inset-left, 0px));
+  padding: 8px 10px 28px max(10px, env(safe-area-inset-left, 0px));
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 /* Personnalisation de la barre de défilement (Scrollbar) */
@@ -892,7 +892,7 @@ body {
   border-color: var(--border-color);
 }
 
-/* Carte de Projet Élégante & Sobre */
+/* Carte de Projet Élégante & Sobre avec Ligne de Démarcation */
 .project-card-container {
   border-radius: 8px;
   background: var(--bg-surface);
@@ -903,6 +903,18 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
+}
+
+.project-card-container:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  pointer-events: none;
 }
 
 .project-card-container:hover {
@@ -1066,6 +1078,27 @@ body {
   align-items: center;
   font-size: 10px;
   color: var(--text-muted);
+}
+
+.tree-doc-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+
+.tree-doc-client-tag {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 120px;
 }
 
 /* Branche des dépendances (Factures liées au devis) */
